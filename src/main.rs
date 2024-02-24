@@ -1,5 +1,8 @@
 extern crate sdl2;
 
+use std::collections::HashSet;
+use std::cmp;
+
 use sdl2::event::Event;
 use sdl2::rect::Rect;
 use sdl2::pixels::Color;
@@ -9,9 +12,11 @@ use sdl2::keyboard::Keycode;
 static SCREEN_WIDTH: u32 = 800;
 static SCREEN_HEIGHT: u32 = 600;
 
-struct Game { 
+struct Game {
+    delta_time: f32,
     player: Player,
     boxes: Vec<Box>,
+    pressed_keys: HashSet<Keycode>
 }
 
 struct Player {
@@ -39,6 +44,8 @@ fn main() -> Result<(), String> {
         .unwrap();
 
     let mut canvas = window.into_canvas()
+        .accelerated()
+        .present_vsync()
         .build()
         .unwrap();
     
@@ -102,32 +109,49 @@ fn main() -> Result<(), String> {
                     game.player.y = y - (game.player.height / 2) as i32;
                 },
                 Event::KeyDown { keycode: Some(keycode), .. } => {
-                    match keycode {
-                        Keycode::Escape => {
-                            running = false;
-                        },
-                        Keycode::W => {
-                            game.player.y -= 5;
-                        },
-                        Keycode::S => {
-                            game.player.y += 5;
-                        },
-                        Keycode::A => {
-                            game.player.x -= 5;
-                        },
-                        Keycode::D => {
-                            game.player.x += 5;
-                        },
-                        _ => {}
-                    }
+                    game.pressed_keys.insert(keycode);
+                },
+                Event::KeyUp { keycode: Some(keycode), .. } => {
+                    game.pressed_keys.remove(&keycode);
+                },
+                Event::User {timestamp, ..} => {
+                    game.delta_time = timestamp as f32;
                 },
                 _ => {}
             }
         }
+        update_game(&mut game);
         draw_game(&mut game, &mut canvas)?;
     }
 
     Ok(())
+}
+
+fn update_game(game: &mut Game){
+    for keycode in &game.pressed_keys {
+        match keycode {
+            Keycode::W => {
+                game.player.y -= 1;
+            },
+            Keycode::S => {
+                game.player.y += 1;
+            },
+            Keycode::A => {
+                game.player.x -= 1;
+            },
+            Keycode::D => {
+                game.player.x += 1;
+            },
+            _ => {}
+        }
+    }
+    
+    //bound player to screen
+    game.player.x = cmp::max(game.player.x, 0);
+    game.player.x = cmp::min(game.player.x, (SCREEN_WIDTH - game.player.width as u32) as i32);
+
+    game.player.y = cmp::max(game.player.y, 0);
+    game.player.y = cmp::min(game.player.y, (SCREEN_HEIGHT - game.player.height as u32) as i32);
 }
 
 fn draw_game(game: &mut Game, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>) -> Result<(), String> { 
@@ -165,5 +189,7 @@ fn init_game() -> Game {
     Game {
         player: init_player(),
         boxes: init_boxes(),
+        pressed_keys: HashSet::new(),
+        delta_time: 0.0,
     }
 }
