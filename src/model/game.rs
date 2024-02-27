@@ -1,8 +1,8 @@
 use sdl2::keyboard::Keycode;
 use std::collections::HashSet;
 
-pub static SCREEN_WIDTH: u32 = 960;
-pub static SCREEN_HEIGHT: u32 = 540;
+pub static SCREEN_WIDTH: u32 = 256;
+pub static SCREEN_HEIGHT: u32 = 144;
 
 pub struct Game {
     pub player: Player,
@@ -30,8 +30,8 @@ pub fn init_player() -> Player {
     Player {
         x: 0,
         y: 0,
-        width: 30,
-        height: 30,
+        width: 16,
+        height: 16,
     }
 }
 
