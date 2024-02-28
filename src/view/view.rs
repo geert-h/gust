@@ -17,17 +17,13 @@ pub fn draw_game(
         let rect = Rect::new(rect.x, rect.y, rect.width, rect.height);
         canvas.fill_rect(rect).unwrap();
     }
+    
+    //Draw grid
+    draw_grid(canvas, SCREEN_WIDTH, SCREEN_HEIGHT, None)?;
 
     //Draw player
-    //Bind texture to player
-    let player_rect = Rect::new(
-        game.player.x,
-        game.player.y,
-        game.player.width,
-        game.player.height,
-    );
-    canvas.copy(texture, None, player_rect).unwrap();
-
+    draw_player(game, canvas, texture)?;
+    
     //Draw to screen
     canvas.present();
 
@@ -40,7 +36,7 @@ pub fn init_canvas_and_event_queue(
     let video_subsystem = sdl_context.video()?;
 
     let window = video_subsystem
-        .window("rust-test", SCREEN_WIDTH, SCREEN_HEIGHT)
+        .window("AstroGuy", SCREEN_WIDTH, SCREEN_HEIGHT)
         .position_centered()
         .maximized()
         .resizable()
@@ -60,7 +56,52 @@ pub fn init_canvas_and_event_queue(
         .set_logical_size(SCREEN_WIDTH, SCREEN_HEIGHT)
         .unwrap();
 
+    let screen_area = Rect::new(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    canvas.fill_rect(screen_area).unwrap();
+
     let event_queue = sdl_context.event_pump().unwrap();
 
     Ok((canvas, event_queue))
+}
+
+pub fn draw_player(
+    game: &mut Game,
+    canvas: &mut sdl2::render::Canvas<sdl2::video::Window>,
+    texture: &sdl2::render::Texture,
+) -> Result<(), String> {
+
+    let player_rect = Rect::new(
+        game.player.x,
+        game.player.y,
+        game.player.width,
+        game.player.height,
+    );
+    canvas.copy(texture, None, player_rect).unwrap();
+    Ok(())
+}
+
+fn draw_grid(
+    canvas: &mut sdl2::render::Canvas<sdl2::video::Window>,
+    width: u32,
+    height: u32,
+    grid_color: Option<Color>,
+) -> Result<(), String> {
+
+    canvas.set_draw_color(grid_color.unwrap_or(Color::RGB(255, 255, 255)));
+
+    for x in (15..width-16).step_by(16) {
+        canvas.draw_line(
+            sdl2::rect::Point::new(x as i32, 0),
+            sdl2::rect::Point::new(x as i32, height as i32),
+        ).unwrap();
+    }
+    for y in (15..height-16).step_by(16) {
+        canvas.draw_line(
+            sdl2::rect::Point::new(0, y as i32),
+            sdl2::rect::Point::new(width as i32, y as i32),
+        ).unwrap();
+    }
+
+    Ok(())
 }

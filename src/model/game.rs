@@ -1,6 +1,9 @@
 use sdl2::keyboard::Keycode;
 use std::collections::HashSet;
 
+use crate::model::player;
+use player::{Player, init_player};
+
 pub static SCREEN_WIDTH: u32 = 256;
 pub static SCREEN_HEIGHT: u32 = 144;
 
@@ -12,27 +15,11 @@ pub struct Game {
     pub height: u32,
 }
 
-pub struct Player {
-    pub x: i32,
-    pub y: i32,
-    pub width: u32,
-    pub height: u32,
-}
-
 pub struct Box {
     pub x: i32,
     pub y: i32,
     pub width: u32,
     pub height: u32,
-}
-
-pub fn init_player() -> Player {
-    Player {
-        x: 0,
-        y: 0,
-        width: 16,
-        height: 16,
-    }
 }
 
 pub fn init_boxes() -> Vec<Box> {
