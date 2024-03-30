@@ -12,11 +12,6 @@ pub fn draw_game(
     //Draw all boxes
     canvas.set_draw_color(clear_color);
     canvas.clear();
-    for rect in &game.boxes {
-        canvas.set_draw_color(Color::RGB(0, 255, 0));
-        let rect = Rect::new(rect.x, rect.y, rect.width, rect.height);
-        canvas.fill_rect(rect).unwrap();
-    }
 
     //Draw player
     //Bind texture to player
@@ -42,7 +37,6 @@ pub fn init_canvas_and_event_queue(
     let window = video_subsystem
         .window("rust-test", SCREEN_WIDTH, SCREEN_HEIGHT)
         .position_centered()
-        .maximized()
         .resizable()
         .build()
         .unwrap();

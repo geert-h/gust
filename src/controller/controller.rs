@@ -2,7 +2,7 @@ use std::cmp;
 
 use crate::model;
 
-use model::game::{Box, Game, SCREEN_HEIGHT, SCREEN_WIDTH};
+use model::game::{Game, SCREEN_HEIGHT, SCREEN_WIDTH};
 use sdl2::event::{Event, WindowEvent};
 use sdl2::keyboard::Keycode;
 use sdl2::mouse::MouseButton;
@@ -36,13 +36,8 @@ fn handle_input(
             mouse_btn, x, y, ..
         } => {
             if mouse_btn == MouseButton::Left {
-                let new_rect = Box {
-                    x: x - (game.player.width / 2) as i32,
-                    y: y - (game.player.width / 2) as i32,
-                    width: game.player.width,
-                    height: game.player.height,
-                };
-                game.boxes.push(new_rect);
+                game.player.x = x - (game.player.width / 2) as i32;
+                game.player.y = y - (game.player.height / 2) as i32;
             }
         }
 
@@ -63,15 +58,6 @@ fn handle_input(
         Event::MouseMotion {
             x, y, mousestate, ..
         } => {
-            if mousestate.left() {
-                let new_rect = Box {
-                    x: x - (game.player.width / 2) as i32,
-                    y: y - (game.player.width / 2) as i32,
-                    width: game.player.width,
-                    height: game.player.width,
-                };
-                game.boxes.push(new_rect);
-            }
             game.player.x = x - (game.player.width / 2) as i32;
             game.player.y = y - (game.player.height / 2) as i32;
         }

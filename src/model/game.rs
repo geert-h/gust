@@ -6,10 +6,20 @@ pub static SCREEN_HEIGHT: u32 = 144;
 
 pub struct Game {
     pub player: Player,
-    pub boxes: Vec<Box>,
     pub pressed_keys: HashSet<Keycode>,
     pub width: u32,
     pub height: u32,
+}
+
+impl Game {
+    pub fn new(player: Player, width: u32, height: u32) -> Game {
+        Game {
+            player,
+            pressed_keys: HashSet::new(),
+            width,
+            height,
+        }
+    }
 }
 
 pub struct Player {
@@ -19,32 +29,17 @@ pub struct Player {
     pub height: u32,
 }
 
-pub struct Box {
-    pub x: i32,
-    pub y: i32,
-    pub width: u32,
-    pub height: u32,
-}
-
-pub fn init_player() -> Player {
-    Player {
-        x: 0,
-        y: 0,
-        width: 16,
-        height: 16,
+impl Player {
+    pub fn new(x: i32, y: i32, width: u32, height: u32) -> Player {
+        Player {
+            x,
+            y,
+            width,
+            height,
+        }
     }
 }
 
-pub fn init_boxes() -> Vec<Box> {
-    Vec::new()
-}
-
-pub fn init_game() -> Game {
-    Game {
-        player: init_player(),
-        boxes: init_boxes(),
-        pressed_keys: HashSet::new(),
-        width: SCREEN_WIDTH,
-        height: SCREEN_HEIGHT,
-    }
+pub trait Runner {
+    fn run(&mut self);
 }
