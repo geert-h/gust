@@ -9,3 +9,8 @@ edition = "2021"
 version = "*"
 default-features = false
 features = ["image"]
+
+[dependencies]
+glium = "*"
+winit = "*"
+image = "*"
