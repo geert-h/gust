@@ -15,7 +15,7 @@ impl Runner for Game {
         let screen_area = Rect::new(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
         let texture_creator = canvas.texture_creator();
-        let texture = texture_creator.load_texture("assets/astro.png").unwrap();
+        let texture = texture_creator.load_texture("../../../resources/assets/astro.png").unwrap();
 
         let player = Player::new(0, 0, 16, 16);
 

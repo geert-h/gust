@@ -6,19 +6,30 @@ mod view;
 extern crate glium;
 
 use glium::{Frame, Surface};
+use gust_core::data::mesh::Mesh;
+use gust_core::parsers::obj_file_parser;
 
 fn main() {
-    let frac_shader_string = include_str!("../../shaders/frac.glsl");
-    let vert_shader_string = include_str!("../../shaders/vert.glsl");
+    let frac_shader_string = include_str!("../../resources/shaders/frac.glsl");
+    let vert_shader_string = include_str!("../../resources/shaders/vert.glsl");
+
+    // let mesh = obj_file_parser::parse_obj_file("../../resources/objects/teapot.obj");
 
     let event_loop = winit::event_loop::EventLoopBuilder::new()
         .build()
         .expect("Event loop building");
     let (window, display) = glium::backend::glutin::SimpleWindowBuilder::new()
-        .with_title("Game or something")
+        .with_title("Gust")
         .build(&event_loop);
 
     let mut t: f32 = 0.0;
+
+    // let positions = glium::VertexBuffer::new(&display, &mesh.vertices).unwrap();
+    // let indices = glium::IndexBuffer::new(
+    //     &display,
+    //     glium::index::PrimitiveType::TrianglesList,
+    //     &mesh.faces,
+    // );
 
     let positions = glium::VertexBuffer::new(&display, &VERTICES).unwrap();
     let normals = glium::VertexBuffer::new(&display, &NORMALS).unwrap();
