@@ -7,7 +7,7 @@ extern crate glium;
 
 use glium::{Frame, Surface};
 use gust_core::data::mesh::Mesh;
-use gust_core::parsers::obj_file_parser;
+use gust_core::parsers::wavefront_object_parser;
 
 fn main() {
     let frac_shader_string = include_str!("../../resources/shaders/frac.glsl");

@@ -1,1 +1,1 @@
-pub mod obj_file_parser;
+pub mod wavefront_object_parser;
