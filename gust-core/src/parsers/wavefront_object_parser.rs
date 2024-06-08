@@ -9,7 +9,7 @@ pub fn parse_wavefront_object(file_path: &str) -> wavefront_object::WavefrontObj
     let mut normals = Vec::new();
     let mut faces = Vec::new();
 
-    for line in file.lines() {
+    for mut line in file.lines() {
         let mut parts = line.split_whitespace();
         match parts.next() {
             Some("v") => {
@@ -29,13 +29,8 @@ pub fn parse_wavefront_object(file_path: &str) -> wavefront_object::WavefrontObj
                 let z: f32 = parts.next().unwrap().parse().unwrap();
                 normals.push([x, y, z]);
             }
-            Some("f") => {
-                let mut face = [0; 3];
-                for i in 0..3 {
-                    let indices: Vec<&str> = parts.next().unwrap().split('/').collect();
-                    let vertex_index: u32 = indices[0].parse().unwrap();
-                    face[i] = vertex_index - 1;
-                }
+            Some("f") =>  {
+                let face = parse_face(line);
                 faces.push(face);
             }
             _ => {}
@@ -48,4 +43,21 @@ pub fn parse_wavefront_object(file_path: &str) -> wavefront_object::WavefrontObj
         normals,
         faces,
     }
+}
+
+fn parse_face(mut line: &str) -> Vec<[u32; 3]> {
+    //remove the 'f' from the line
+    line = line.trim_start_matches('f').trim();
+    let mut faces = Vec::new();
+    for face in line.split_whitespace() {
+        let mut indices : [u32; 3] = [0; 3];
+        for (index, value) in face.split('/').enumerate() {
+            if value.is_empty() {
+                continue;
+            }
+            indices[index] = value.parse().unwrap();
+        }
+        faces.push(indices);
+    }
+    faces
 }
