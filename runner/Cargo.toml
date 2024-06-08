@@ -15,3 +15,4 @@ glium = "*"
 winit = "*"
 image = "0.25.0"
 gust-core = { path = "../gust-core" }
+smol_str = "*"
