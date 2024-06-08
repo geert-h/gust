@@ -1,11 +1,17 @@
 use std::cmp;
 
 use crate::model;
+use crate::view::view::draw_game;
 
 use model::game::{Game, SCREEN_HEIGHT, SCREEN_WIDTH};
 use sdl2::event::{Event, WindowEvent};
 use sdl2::keyboard::Keycode;
 use sdl2::mouse::MouseButton;
+
+use sdl2::video::Window;
+use sdl2::render::Canvas;
+
+use sdl2::image::LoadTexture;
 
 pub fn handle_inputs(
     game: &mut Game,
@@ -120,4 +126,19 @@ pub fn update_game(game: &mut Game) {
         game.player.y,
         (SCREEN_HEIGHT - game.player.height as u32) as i32,
     );
+}
+
+pub fn game_loop(mut game : &mut Game, mut canvas : &mut  Canvas<Window>, mut event_queue: &mut sdl2::EventPump) -> Result<(), String> {
+    let mut running = true;
+
+    let texture_creator = canvas.texture_creator();
+    let texture = texture_creator.load_texture("assets/astro.png")?;
+
+    while running {
+        running = handle_inputs(&mut game, &mut canvas, &mut event_queue);
+        update_game(&mut game);
+        draw_game(&mut game, &mut canvas, &texture)?;
+    }
+
+    Ok(())
 }
