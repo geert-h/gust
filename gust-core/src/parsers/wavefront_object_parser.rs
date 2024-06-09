@@ -9,7 +9,7 @@ pub fn parse_wavefront_object(file_path: &str) -> wavefront_object::WavefrontObj
     let mut normals = Vec::new();
     let mut faces = Vec::new();
 
-    for mut line in file.lines() {
+    for line in file.lines() {
         let mut parts = line.split_whitespace();
         match parts.next() {
             Some("v") => {

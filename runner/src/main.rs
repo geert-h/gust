@@ -7,10 +7,12 @@ extern crate glium;
 
 use std::fmt::Display;
 use glium::{Frame, Surface, VertexBuffer};
+use winit::dpi::PhysicalPosition;
 use winit::event_loop::EventLoop;
 use winit::event::{KeyEvent, MouseButton};
 use winit::keyboard::{Key, NamedKey, SmolStr};
 use winit::event::Event::WindowEvent;
+use winit::window::CursorGrabMode;
 use gust_core::data::mesh::*;
 use gust_core::parsers::wavefront_object_parser;
 use gust_core::data::vertex::Vertex;
@@ -18,6 +20,7 @@ fn main() {
 
     let mut position = [0.0, 0.0, 5.0];
     let mut direction = [0.0, 0.0, -1.0];
+    let mut mouse_position = PhysicalPosition::new(0.0, 0.0);
 
     let frac_shader_string = include_str!("../../resources/shaders/frac.glsl");
     let vert_shader_string = include_str!("../../resources/shaders/vert.glsl");
@@ -31,6 +34,12 @@ fn main() {
     let (window, display) = glium::backend::glutin::SimpleWindowBuilder::new()
         .with_title("Gust")
         .build(&event_loop);
+
+    window.set_cursor_grab(CursorGrabMode::Locked)
+        .or_else(|_e| window.set_cursor_grab(CursorGrabMode::Confined))
+        .unwrap();
+
+    window.set_cursor_visible(false);
 
     let mut t: f32 = 0.0;
 
@@ -92,7 +101,9 @@ fn main() {
                         target.finish().unwrap();
                     },
                     winit::event::WindowEvent::CursorMoved { position, .. } => {
-                        println!("Cursor moved to {:?}", position);
+                        handle_mouse_input(position, &mut direction, &mut mouse_position);
+                        window.set_cursor_position(PhysicalPosition::new(400.0, 240.0)).unwrap();
+                        mouse_position = PhysicalPosition::new(400.0, 240.0);
                     },
                     _ => (),
                 },
@@ -181,18 +192,35 @@ fn view_matrix(position: &[f32; 3], direction: &[f32; 3], up: &[f32; 3]) -> [[f3
     ]
 }
 
-// fn handle_mouse_input(
-//     mouse_btn: MouseButton,
-//     x: i32,
-//     y: i32,
-//     game: &mut model::game::Game,
-// ) {
-//     if mouse_btn == MouseButton::Left {
-//         game.player.x = x - (game.player.width / 2) as i32;
-//         game.player.y = y - (game.player.height / 2) as i32;
-//     }
-// }
-//
+fn handle_mouse_input(
+    new_position: PhysicalPosition<f64>,
+    direction: &mut [f32; 3],
+    previous_position: &mut PhysicalPosition<f64>,
+){
+    let delta_x = new_position.x - previous_position.x;
+    let delta_y = new_position.y - previous_position.y;
+
+
+    let sensitivity = 0.0005;
+    let delta_x = delta_x as f32 * sensitivity;
+    let delta_y = delta_y as f32 * sensitivity;
+
+    let mut new_direction = *direction;
+
+    new_direction[0] -= delta_x;
+    new_direction[1] -= delta_y;
+
+    let len = (new_direction[0] * new_direction[0] + new_direction[1] * new_direction[1] + new_direction[2] * new_direction[2]).sqrt();
+
+    new_direction[0] /= len;
+    new_direction[1] /= len;
+    new_direction[2] /= len;
+
+    println!("{:?}", new_direction);
+    *direction = new_direction;
+    *previous_position = new_position;
+}
+
 fn new_handle_inputs(
     direction : &mut [f32; 3],
     position : &mut [f32; 3],
@@ -202,22 +230,24 @@ fn new_handle_inputs(
         Key::Character(key_value) if key_value == smol_str::SmolStr::from("w") => {
             position[0] += direction[0] * 0.1;
             position[1] += direction[1] * 0.1;
-            position[2] += direction[2] * 0.1;
         }
         Key::Character(key_value) if key_value == smol_str::SmolStr::from("s") => {
             position[0] -= direction[0] * 0.1;
             position[1] -= direction[1] * 0.1;
-            position[2] -= direction[2] * 0.1;
         }
         Key::Character(key_value) if key_value == smol_str::SmolStr::from("a") => {
             position[0] -= direction[2] * 0.1;
             position[1] -= direction[0] * 0.1;
-            position[2] -= direction[1] * 0.1;
         }
         Key::Character(key_value) if key_value == smol_str::SmolStr::from("d") => {
             position[0] += direction[2] * 0.1;
             position[1] += direction[0] * 0.1;
-            position[2] += direction[1] * 0.1;
+        }
+        Key::Named(NamedKey::Space) => {
+            position[1] += 0.1;
+        }
+        Key::Named(NamedKey::Shift) => {
+            position[1] -= 0.1;
         }
         _ => (),
     }

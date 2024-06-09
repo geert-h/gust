@@ -1,4 +1,3 @@
-use crate::data::face::Face;
 use crate::data::vertex::Vertex;
 use crate::data::wavefront_object::WavefrontObject;
 
