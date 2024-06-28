@@ -1,7 +1,3 @@
-mod controller;
-mod model;
-mod view;
-
 #[macro_use]
 extern crate glium;
 
@@ -17,7 +13,6 @@ use gust_core::data::mesh::*;
 use gust_core::parsers::wavefront_object_parser;
 use gust_core::data::vertex::Vertex;
 fn main() {
-
     let mut position = [0.0, 0.0, 5.0];
     let mut direction = [0.0, 0.0, -1.0];
     let mut mouse_position = PhysicalPosition::new(0.0, 0.0);

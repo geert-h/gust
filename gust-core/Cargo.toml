@@ -10,3 +10,4 @@ features = ["image"]
 
 [dependencies]
 glium = "*"
+winit = "*"
