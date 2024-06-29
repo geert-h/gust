@@ -195,7 +195,6 @@ fn handle_mouse_input(
     let delta_x = new_position.x - previous_position.x;
     let delta_y = new_position.y - previous_position.y;
 
-
     let sensitivity = 0.0005;
     let delta_x = delta_x as f32 * sensitivity;
     let delta_y = delta_y as f32 * sensitivity;
@@ -223,27 +222,41 @@ fn new_handle_inputs(
 ) {
     match key {
         Key::Character(key_value) if key_value == smol_str::SmolStr::from("w") => {
-            position[0] += direction[0] * 0.1;
-            position[1] += direction[1] * 0.1;
+            let x_z_direction = [direction[0], direction[2]];
+            let normalized_direction = normalize(&x_z_direction);
+            position[0] += normalized_direction[0] * 0.1;
+            position[2] += normalized_direction[1] * 0.1;
         }
         Key::Character(key_value) if key_value == smol_str::SmolStr::from("s") => {
-            position[0] -= direction[0] * 0.1;
-            position[1] -= direction[1] * 0.1;
+            let x_z_direction = [direction[0], direction[2]];
+            let normalized_direction = normalize(&x_z_direction);
+            position[0] -= normalized_direction[0] * 0.1;
+            position[2] -= normalized_direction[1] * 0.1;
         }
         Key::Character(key_value) if key_value == smol_str::SmolStr::from("a") => {
-            position[0] -= direction[2] * 0.1;
-            position[1] -= direction[0] * 0.1;
+            let x_z_direction = [direction[0], direction[2]];
+            let normalized_direction = normalize(&x_z_direction);
+            position[0] -= normalized_direction[1] * 0.1;
+            position[2] += normalized_direction[0] * 0.1;
         }
         Key::Character(key_value) if key_value == smol_str::SmolStr::from("d") => {
-            position[0] += direction[2] * 0.1;
-            position[1] += direction[0] * 0.1;
+            let x_z_direction = [direction[0], direction[2]];
+            let normalized_direction = normalize(&x_z_direction);
+            position[0] += normalized_direction[1] * 0.1;
+            position[2] -= normalized_direction[0] * 0.1;
         }
         Key::Named(NamedKey::Space) => {
-            position[1] += 0.1;
+            position[2] += 0.1;
         }
         Key::Named(NamedKey::Shift) => {
             position[1] -= 0.1;
         }
         _ => (),
     }
+}
+
+fn normalize(v : &[f32]) -> Vec<f32> {
+    //Takes N-dimensional vector and returns a normalized N-dimensional vector
+    let len = v.iter().fold(0.0, |acc, x| acc + x * x).sqrt();
+    v.iter().map(|x| x / len).collect()
 }
