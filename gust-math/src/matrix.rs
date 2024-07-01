@@ -107,14 +107,16 @@ impl Matrix {
         Ok(matrix)
     }
 
-    pub fn row(&self, index: usize) -> Vect {
+    pub fn row(&self, index: usize) -> Vec<f32> {
         self[index].clone()
     }
 
-    pub fn column(&self, index: usize) -> Vect {
+    pub fn column(&self, index: usize) -> Vec<f32> {
         let transposed = self.transpose();
         transposed[index].clone()
     }
+
+    pub fn
 }
 
 impl IndexMut<(usize, usize)> for Matrix {
@@ -125,10 +127,9 @@ impl IndexMut<(usize, usize)> for Matrix {
 }
 
 impl IndexMut<usize> for Matrix {
-    fn index_mut(&mut self, index: usize) -> &mut Vect {
+    fn index_mut(&mut self, index: usize) -> &mut Vec<f32> {
         let row = &mut self.data[index];
-        let vect = Vect::from_slice(row);
-        &vect
+        row
     }
 }
 
@@ -142,12 +143,11 @@ impl Index<(usize, usize)> for Matrix {
 }
 
 impl Index<usize> for Matrix {
-    type Output = Vect;
+    type Output = Vec<f32>;
 
-    fn index(&self, index :usize) -> &Vect {
+    fn index(&self, index :usize) -> &Vec<f32> {
         let row = &self.data[index];
-        let vect = Vect::from_slice(row);
-        &vect
+        &row
     }
 }
 
