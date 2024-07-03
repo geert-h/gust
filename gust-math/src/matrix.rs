@@ -1,6 +1,7 @@
 use std::ops::{Index, IndexMut};
 use crate::vect::Vect;
 
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Matrix {
     pub shape: (usize, usize),
     data: Vec<Vec<f32>>,
@@ -116,7 +117,18 @@ impl Matrix {
         transposed[index].clone()
     }
 
-    pub fn
+    pub fn row_vect(&self, index: usize) -> Result<Vect, MatrixError> {
+        if index > self.shape.1 || index < 0 {
+            return Err(MatrixError::InvalidIndex((index, self.shape.1)));
+        }
+        let row = self[index].clone();
+        Ok(Vect::from_vec(row))
+    }
+
+    pub fn column_vect(&self, index: usize) -> Result<Vect, MatrixError> {
+        let transposed = self.transpose();
+        transposed.row_vect(index)
+    }
 }
 
 impl IndexMut<(usize, usize)> for Matrix {
@@ -145,7 +157,7 @@ impl Index<(usize, usize)> for Matrix {
 impl Index<usize> for Matrix {
     type Output = Vec<f32>;
 
-    fn index(&self, index :usize) -> &Vec<f32> {
+    fn index(&self, index: usize) -> &Vec<f32> {
         let row = &self.data[index];
         &row
     }
@@ -230,7 +242,318 @@ impl std::ops::Mul<Vect> for Matrix {
     }
 }
 
+impl std::ops::Mul<Matrix> for Matrix {
+    type Output = Matrix;
+
+    fn mul(self, rhs: Matrix) -> Matrix {
+        self.dot(&rhs).unwrap()
+    }
+}
+
+#[derive(Debug)]
 pub enum MatrixError {
     DimensionMismatch((usize, usize), (usize, usize)),
     InvalidIndex((usize, usize)),
+}
+
+impl std::fmt::Display for MatrixError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            MatrixError::DimensionMismatch((rows, cols), (other_rows, other_cols)) => {
+                write!(f, "Matrix dimension mismatch: ({}, {}) != ({}, {})", rows, cols, other_rows, other_cols)
+            }
+            MatrixError::InvalidIndex((index, max)) => {
+                write!(f, "Invalid index: {} > {}", index, max)
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_identity() {
+        let matrix_size = 4;
+        let mat = Matrix::identity(matrix_size);
+
+        for i in 0..matrix_size {
+            for j in 0..matrix_size {
+                if i == j {
+                    assert_eq!(mat[(i, j)], 1.0);
+                } else {
+                    assert_eq!(mat[(i, j)], 0.0);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn test_transpose() {
+        let shape = (3, 3);
+        let data = vec![
+            1.0, 2.0, 3.0,
+            4.0, 5.0, 6.0,
+            7.0, 8.0, 9.0,
+        ];
+        let mat = Matrix::from_vec(shape, data);
+        let transposed = mat.transpose();
+
+        for i in 0..shape.0 {
+            for j in 0..shape.1 {
+                assert_eq!(mat[(i, j)], transposed[(j, i)]);
+            }
+        }
+    }
+
+    #[test]
+    fn test_dot() {
+        let shape = (2, 3);
+        let data = vec![
+            1.0, 2.0, 3.0,
+            4.0, 5.0, 6.0,
+        ];
+        let mat = Matrix::from_vec(shape, data);
+
+        let other_shape = (3, 2);
+        let other_data = vec![
+            7.0, 8.0,
+            9.0, 10.0,
+            11.0, 12.0,
+        ];
+        let other_mat = Matrix::from_vec(other_shape, other_data);
+
+        let result = mat.dot(&other_mat).unwrap();
+        let expected_shape = (2, 2);
+        let expected_data = vec![
+            58.0, 64.0,
+            139.0, 154.0,
+        ];
+        let expected = Matrix::from_vec(expected_shape, expected_data);
+
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_row() {
+        let shape = (2, 3);
+        let data = vec![
+            1.0, 2.0, 3.0,
+            4.0, 5.0, 6.0,
+        ];
+        let mat = Matrix::from_vec(shape, data);
+
+        let row = mat.row(1);
+        assert_eq!(row, vec![4.0, 5.0, 6.0]);
+    }
+
+    #[test]
+    fn test_column() {
+        let shape = (2, 3);
+        let data = vec![
+            1.0, 2.0, 3.0,
+            4.0, 5.0, 6.0,
+        ];
+        let mat = Matrix::from_vec(shape, data);
+
+        let column = mat.column(1);
+        assert_eq!(column, vec![2.0, 5.0]);
+    }
+
+    #[test]
+    fn test_row_vect() {
+        let shape = (2, 3);
+        let data = vec![
+            1.0, 2.0, 3.0,
+            4.0, 5.0, 6.0,
+        ];
+        let mat = Matrix::from_vec(shape, data);
+
+        let row = mat.row_vect(1).unwrap();
+        assert_eq!(row.dim, 3);
+        assert_eq!(row[0], 4.0);
+        assert_eq!(row[1], 5.0);
+        assert_eq!(row[2], 6.0);
+    }
+
+    #[test]
+    fn test_column_vect() {
+        let shape = (2, 3);
+        let data = vec![
+            1.0, 2.0, 3.0,
+            4.0, 5.0, 6.0,
+        ];
+        let mat = Matrix::from_vec(shape, data);
+
+        let column = mat.column_vect(1).unwrap();
+        assert_eq!(column.dim, 2);
+        assert_eq!(column[0], 2.0);
+        assert_eq!(column[1], 5.0);
+    }
+
+    #[test]
+    fn test_neg() {
+        let shape = (2, 3);
+        let data = vec![
+            1.0, 2.0, 3.0,
+            4.0, 5.0, 6.0,
+        ];
+        let mat = Matrix::from_vec(shape, data);
+
+        let neg = -mat;
+        let expected_data = vec![
+            -1.0, -2.0, -3.0,
+            -4.0, -5.0, -6.0,
+        ];
+        let expected = Matrix::from_vec(shape, expected_data);
+
+        assert_eq!(neg, expected);
+    }
+
+    #[test]
+    fn test_add() {
+        let shape = (2, 3);
+        let data = vec![
+            1.0, 2.0, 3.0,
+            4.0, 5.0, 6.0,
+        ];
+        let mat = Matrix::from_vec(shape, data);
+
+        let other_data = vec![
+            7.0, 8.0, 9.0,
+            10.0, 11.0, 12.0,
+        ];
+        let other = Matrix::from_vec(shape, other_data);
+
+        let sum = mat + other;
+        let expected_data = vec![
+            8.0, 10.0, 12.0,
+            14.0, 16.0, 18.0,
+        ];
+        let expected = Matrix::from_vec(shape, expected_data);
+
+        assert_eq!(sum, expected);
+    }
+
+    #[test]
+    fn test_sub() {
+        let shape = (2, 3);
+        let data = vec![
+            1.0, 2.0, 3.0,
+            4.0, 5.0, 6.0,
+        ];
+        let mat = Matrix::from_vec(shape, data);
+
+        let other_data = vec![
+            7.0, 8.0, 9.0,
+            10.0, 11.0, 12.0,
+        ];
+        let other = Matrix::from_vec(shape, other_data);
+
+        let diff = mat - other;
+        let expected_data = vec![
+            -6.0, -6.0, -6.0,
+            -6.0, -6.0, -6.0,
+        ];
+        let expected = Matrix::from_vec(shape, expected_data);
+
+        assert_eq!(diff, expected);
+    }
+
+    #[test]
+    fn test_mul_scalar() {
+        let shape = (2, 3);
+        let data = vec![
+            1.0, 2.0, 3.0,
+            4.0, 5.0, 6.0,
+        ];
+        let mat = Matrix::from_vec(shape, data);
+
+        let scalar = 2.0;
+        let product = mat * scalar;
+        let expected_data = vec![
+            2.0, 4.0, 6.0,
+            8.0, 10.0, 12.0,
+        ];
+        let expected = Matrix::from_vec(shape, expected_data);
+
+        assert_eq!(product, expected);
+    }
+
+    #[test]
+    fn test_mul_vector() {
+        let shape = (2, 3);
+        let data = vec![
+            1.0, 2.0, 3.0,
+            4.0, 5.0, 6.0,
+        ];
+        let mat = Matrix::from_vec(shape, data);
+
+        let vect = Vect::from_vec(vec![1.0, 2.0, 3.0]);
+        let product = mat * vect;
+        let expected = Vect::from_vec(vec![14.0, 32.0]);
+
+        assert_eq!(product, expected);
+    }
+
+    #[test]
+    fn test_mul_matrix() {
+        let shape = (2, 3);
+        let data = vec![
+            1.0, 2.0, 3.0,
+            4.0, 5.0, 6.0,
+        ];
+        let mat = Matrix::from_vec(shape, data);
+
+        let other_shape = (3, 2);
+        let other_data = vec![
+            7.0, 8.0,
+            9.0, 10.0,
+            11.0, 12.0,
+        ];
+        let other = Matrix::from_vec(other_shape, other_data);
+
+        let product = mat * other;
+        let expected_shape = (2, 2);
+        let expected_data = vec![
+            58.0, 64.0,
+            139.0, 154.0,
+        ];
+        let expected = Matrix::from_vec(expected_shape, expected_data);
+
+        assert_eq!(product, expected);
+    }
+
+    #[test]
+    fn test_from_vects() {
+        let vects = vec![
+            Vect::from_vec(vec![1.0, 2.0, 3.0]),
+            Vect::from_vec(vec![4.0, 5.0, 6.0]),
+        ];
+        let mat = Matrix::from_vects(vects);
+
+        let expected_shape = (2, 3);
+        let expected_data = vec![
+            1.0, 2.0, 3.0,
+            4.0, 5.0, 6.0,
+        ];
+        let expected = Matrix::from_vec(expected_shape, expected_data);
+
+        assert_eq!(mat, expected);
+    }
+
+    #[test]
+    fn test_zeros() {
+        let shape = (2, 3);
+        let mat = Matrix::zeros(shape);
+
+        let expected_data = vec![
+            0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0,
+        ];
+        let expected = Matrix::from_vec(shape, expected_data);
+
+        assert_eq!(mat, expected);
+    }
 }
