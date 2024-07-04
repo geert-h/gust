@@ -9,19 +9,26 @@ use winit::event::{KeyEvent, MouseButton};
 use winit::keyboard::{Key, NamedKey, SmolStr};
 use winit::event::Event::WindowEvent;
 use winit::window::CursorGrabMode;
+use gust_core::data::game::Game;
 use gust_core::data::mesh::*;
 use gust_core::parsers::wavefront_object_parser;
 use gust_core::data::vertex::Vertex;
+use gust_math::vect::Vect;
+
 fn main() {
-    let mut position = [0.0, 0.0, 5.0];
-    let mut direction = [0.0, 0.0, -1.0];
-    let mut mouse_position = PhysicalPosition::new(0.0, 0.0);
+    let position = [0.0, 0.0, 5.0];
+    let direction = [0.0f32, 0.0, -1.0];
 
     let frac_shader_string = include_str!("../../resources/shaders/frac.glsl");
     let vert_shader_string = include_str!("../../resources/shaders/vert.glsl");
 
     let wavefront_object = wavefront_object_parser::parse_wavefront_object("C:\\Users\\Geert\\source\\repos\\Personal\\gust\\resources\\assets\\objects\\monkey.obj");
     let object = from_wavefront_object(wavefront_object);
+
+    let mut game = Game::new();
+
+    game.player.direction = Vect::from_slice(&direction);
+    game.player.position = Vect::from_slice(&position);
 
     let event_loop = winit::event_loop::EventLoopBuilder::new()
         .build()
@@ -49,12 +56,29 @@ fn main() {
     let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
 
     let vertex_buffer = VertexBuffer::new(&display, &flattened_triangles).unwrap();
-
+    let mut mouse_position = PhysicalPosition::new(400.0, 240.0);
     event_loop
         .run(move |event, window_target| {
+            game.handle_mouse_input(mouse_position);
+            game.update();
             match event {
                 WindowEvent { event: window_event, .. } => match window_event {
-                    winit::event::WindowEvent::KeyboardInput { event : KeyEvent { logical_key : key, ..}, .. } => new_handle_inputs(&mut direction, &mut position, key),
+                    winit::event::WindowEvent::KeyboardInput { event : KeyEvent { logical_key : key, state,.. }, .. } => {
+                        match state {
+                            winit::event::ElementState::Pressed => {
+                                game.handle_keyboard_input(key);
+                            },
+                            winit::event::ElementState::Released => {
+                                game.handle_key_release(key);
+                            },
+                        }
+                    },
+                    winit::event::WindowEvent::CursorMoved { position : new_position, .. } => {
+                        mouse_position = new_position;
+                        window.set_cursor_position(PhysicalPosition::new(400.0, 240.0)).unwrap();
+                        game.handle_mouse_input(mouse_position);
+                        mouse_position = PhysicalPosition::new(400.0, 240.0);
+                    },
                     winit::event::WindowEvent::CloseRequested => window_target.exit(),
                     winit::event::WindowEvent::Resized(window_size) => {
                         display.resize(window_size.into());
@@ -88,17 +112,12 @@ fn main() {
                                 &vertex_buffer,
                                 &indices,
                                 &program,
-                                &get_uniforms(position, direction, t, &target),
+                                &get_uniforms(game.player.position.to_vec().try_into().unwrap(), game.player.direction.to_vec().try_into().unwrap(), t, &target),
                                 &params,
                             )
                             .unwrap();
 
                         target.finish().unwrap();
-                    },
-                    winit::event::WindowEvent::CursorMoved { position, .. } => {
-                        handle_mouse_input(position, &mut direction, &mut mouse_position);
-                        window.set_cursor_position(PhysicalPosition::new(400.0, 240.0)).unwrap();
-                        mouse_position = PhysicalPosition::new(400.0, 240.0);
                     },
                     _ => (),
                 },

@@ -118,7 +118,7 @@ impl Matrix {
     }
 
     pub fn row_vect(&self, index: usize) -> Result<Vect, MatrixError> {
-        if index > self.shape.1 || index < 0 {
+        if index > self.shape.1 {
             return Err(MatrixError::InvalidIndex((index, self.shape.1)));
         }
         let row = self[index].clone();
@@ -128,6 +128,26 @@ impl Matrix {
     pub fn column_vect(&self, index: usize) -> Result<Vect, MatrixError> {
         let transposed = self.transpose();
         transposed.row_vect(index)
+    }
+
+    pub fn rotation_matrix(axis: &Vect, angle: f32) -> Self {
+        let (x, y, z) = (axis[0], axis[1], axis[2]);
+        let c = angle.cos();
+        let s = angle.sin();
+        let t = 1.0 - c;
+
+        let mut matrix = Matrix::identity(3);
+        matrix[(0, 0)] = t * x * x + c;
+        matrix[(0, 1)] = t * x * y - s * z;
+        matrix[(0, 2)] = t * x * z + s * y;
+        matrix[(1, 0)] = t * x * y + s * z;
+        matrix[(1, 1)] = t * y * y + c;
+        matrix[(1, 2)] = t * y * z - s * x;
+        matrix[(2, 0)] = t * x * z - s * y;
+        matrix[(2, 1)] = t * y * z + s * x;
+        matrix[(2, 2)] = t * z * z + c;
+
+        matrix
     }
 }
 

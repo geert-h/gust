@@ -8,9 +8,14 @@ pub struct Vect {
 
 impl Vect {
     pub fn new(dim: usize) -> Self {
+        let mut data = Vec::with_capacity(dim);
+        for _ in 0..dim {
+            data.push(0.0);
+        }
+
         Vect {
             dim,
-            data: Vec::with_capacity(dim),
+            data,
         }
     }
 
@@ -39,7 +44,13 @@ impl Vect {
         for i in 0..self.dim {
             sum = sum + self[i] * self[i];
         }
-        sum.sqrt()
+
+        let root = sum.sqrt();
+
+        if root.is_nan() {
+            return 0.0;
+        }
+        root
     }
 
     pub fn normalize(&mut self) {
@@ -81,6 +92,18 @@ impl Vect {
         }
 
         Ok(result)
+    }
+
+    pub fn set(&mut self, index: usize, value: f32) {
+        if index >= self.dim {
+            panic!("Invalid index");
+        }
+
+        self.data[index] = value;
+    }
+
+    pub fn to_vec(&self) -> Vec<f32> {
+        self.data.clone()
     }
 }
 

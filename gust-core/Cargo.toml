@@ -11,3 +11,5 @@ features = ["image"]
 [dependencies]
 glium = "*"
 winit = "*"
+gust-math = { path = "../gust-math" }
+smol_str = "0.2.2"
