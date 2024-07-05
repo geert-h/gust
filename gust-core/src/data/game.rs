@@ -1,6 +1,7 @@
 use std::path::Path;
 use winit::dpi::PhysicalPosition;
 use winit::keyboard::Key;
+use gust_math::vect::Vect;
 use crate::data::player::Player;
 use crate::handlers::input_handler::GameInput;
 
@@ -21,6 +22,10 @@ impl Game {
     }
 
     pub fn update(&mut self) {
+        if self.game_input.keyboard_input.is_character_pressed('r') {
+            self.player.position = Vect::from_slice(&[0.0, 0.0, 5.0]);
+            self.player.direction = Vect::from_slice(&[0.0f32, 0.0, -1.0]);
+        }
         self.player.update(&self.game_input);
     }
 

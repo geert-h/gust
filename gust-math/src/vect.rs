@@ -55,6 +55,9 @@ impl Vect {
 
     pub fn normalize(&mut self) {
         let norm = self.norm();
+        if norm == 0.0 {
+            return;
+        }
         for i in 0..self.dim {
             self.data[i] = self.data[i] / norm;
         }
@@ -84,11 +87,11 @@ impl Vect {
         let mut result = Vect::new(self.dim);
 
         if self.dim == 2 {
-            result.data.push(self[0] * other[1] - self[1] * other[0]);
+            result[0] = self[0] * other[1] - self[1] * other[0];
         } else {
-            result.data.push(self[1] * other[2] - self[2] * other[1]);
-            result.data.push(self[2] * other[0] - self[0] * other[2]);
-            result.data.push(self[0] * other[1] - self[1] * other[0]);
+            result[0] = self[1] * other[2] - self[2] * other[1];
+            result[1] = self[2] * other[0] - self[0] * other[2];
+            result[2] = self[0] * other[1] - self[1] * other[0];
         }
 
         Ok(result)
@@ -113,7 +116,7 @@ impl std::ops::Mul<f32> for Vect {
     fn mul(self, rhs: f32) -> Vect {
         let mut result = Vect::new(self.dim);
         for i in 0..self.dim {
-            result.data.push(self[i] * rhs);
+            result[i] = self[i] * rhs;
         }
         result
     }
@@ -125,7 +128,7 @@ impl std::ops::Add for Vect {
     fn add(self, rhs: Vect) -> Vect {
         let mut result = Vect::new(self.dim);
         for i in 0..self.dim {
-            result.data.push(self[i] + rhs[i]);
+            result[i] = self[i] + rhs[i];
         }
         result
     }
@@ -137,7 +140,7 @@ impl std::ops::Sub for Vect {
     fn sub(self, rhs: Vect) -> Vect {
         let mut result = Vect::new(self.dim);
         for i in 0..self.dim {
-            result.data.push(self[i] - rhs[i]);
+            result[i] = self[i] - rhs[i];
         }
         result
     }
@@ -149,7 +152,7 @@ impl std::ops::Neg for Vect {
     fn neg(self) -> Vect {
         let mut result = Vect::new(self.dim);
         for i in 0..self.dim {
-            result.data.push(-self[i]);
+            result[i] = -self[i];
         }
         result
     }
@@ -201,20 +204,14 @@ mod tests {
 
     #[test]
     fn test_norm() {
-        let mut v = Vect::new(3);
-        v.data.push(1.0);
-        v.data.push(2.0);
-        v.data.push(3.0);
+        let mut v = Vect::from_slice(&[1.0, 2.0, 3.0]);
 
         assert_eq!(v.norm(), 14.0_f32.sqrt());
     }
 
     #[test]
     fn test_normalize() {
-        let mut v = Vect::new(3);
-        v.data.push(1.0);
-        v.data.push(2.0);
-        v.data.push(0.0);
+        let mut v = Vect::from_slice(&[1.0, 2.0, 0.0]);
 
         v.normalize();
         let eps = 1e-6;
@@ -225,30 +222,18 @@ mod tests {
 
     #[test]
     fn test_dot() {
-        let mut v1 = Vect::new(3);
-        v1.data.push(1.0);
-        v1.data.push(2.0);
-        v1.data.push(3.0);
+        let mut v1 = Vect::from_slice(&[1.0, 2.0, 3.0]);
 
-        let mut v2 = Vect::new(3);
-        v2.data.push(4.0);
-        v2.data.push(5.0);
-        v2.data.push(6.0);
+        let v2 = Vect::from_slice(&[4.0, 5.0, 6.0]);
 
         assert_eq!(v1.dot(&v2).unwrap(), 32.0);
     }
 
     #[test]
     fn test_cross() {
-        let mut v1 = Vect::new(3);
-        v1.data.push(1.0);
-        v1.data.push(2.0);
-        v1.data.push(3.0);
+        let v1 = Vect::from_slice(&[1.0, 2.0, 3.0]);
 
-        let mut v2 = Vect::new(3);
-        v2.data.push(4.0);
-        v2.data.push(5.0);
-        v2.data.push(6.0);
+        let v2 = Vect::from_slice(&[4.0, 5.0, 6.0]);
 
         let result = v1.cross(&v2).unwrap();
 
@@ -259,14 +244,9 @@ mod tests {
 
     #[test]
     fn test_cross_invalid_dimension() {
-        let mut v1 = Vect::new(2);
-        v1.data.push(1.0);
-        v1.data.push(2.0);
+        let v1 = Vect::from_slice(&[1.0, 2.0]);
 
-        let mut v2 = Vect::new(3);
-        v2.data.push(4.0);
-        v2.data.push(5.0);
-        v2.data.push(6.0);
+        let v2 = Vect::from_slice(&[4.0, 5.0, 6.0]);
 
         let result = v1.cross(&v2);
 
@@ -275,15 +255,9 @@ mod tests {
 
     #[test]
     fn test_cross_dimension_valid() {
-        let mut v1 = Vect::new(3);
-        v1.data.push(1.0);
-        v1.data.push(2.0);
-        v1.data.push(3.0);
+        let v1 = Vect::from_slice(&[1.0, 2.0, 3.0]);
 
-        let mut v2 = Vect::new(3);
-        v2.data.push(4.0);
-        v2.data.push(5.0);
-        v2.data.push(6.0);
+        let v2 = Vect::from_slice(&[4.0, 5.0, 6.0]);
 
         let result = v1.cross(&v2);
 

@@ -59,8 +59,6 @@ fn main() {
     let mut mouse_position = PhysicalPosition::new(400.0, 240.0);
     event_loop
         .run(move |event, window_target| {
-            game.handle_mouse_input(mouse_position);
-            game.update();
             match event {
                 WindowEvent { event: window_event, .. } => match window_event {
                     winit::event::WindowEvent::KeyboardInput { event : KeyEvent { logical_key : key, state,.. }, .. } => {
@@ -85,6 +83,8 @@ fn main() {
                     }
                     winit::event::WindowEvent::RedrawRequested => {
                         t += 0.02;
+                        game.handle_mouse_input(mouse_position);
+                        game.update();
 
                         let program = glium::Program::from_source(
                             &display,

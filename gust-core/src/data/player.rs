@@ -15,7 +15,7 @@ impl Player {
         Player {
             position: Vect::new(3),
             direction: Vect::new(3),
-            speed: 0.1,
+            speed: 0.05,
         }
     }
 
@@ -40,7 +40,12 @@ impl Player {
 
         let mut new_direction = direction.clone();
 
-        new_direction[1] += clamp(delta_y, -1.0, 1.0);
+        // We calculate the right axis of the camera by taking the cross product of the direction and the up axis
+        let right = direction.cross(&Vect::from_slice(&[0.0, 1.0, 0.0])).unwrap();
+
+        let rotation_matrix_up = Matrix::rotation_matrix(&right, delta_y);
+
+        new_direction = rotation_matrix_up * new_direction;
 
         new_direction = rotation_matrix * new_direction;
 
@@ -49,7 +54,6 @@ impl Player {
         self.direction = new_direction;
     }
 
-
     fn update_position(&mut self, game_input: &GameInput) {
         let mut direction = self.direction.clone();
         let mut position = self.position.clone();
@@ -57,69 +61,38 @@ impl Player {
         let mut x_z_direction = Vect::from_slice(&[direction[0], 0.0, direction[2]]);
         x_z_direction.normalize();
 
+        let mut cumulative_vector = Vect::from_slice(&[0.0, 0.0, 0.0]);
+
         if game_input.keyboard_input.is_character_pressed('w') {
-            position = position + x_z_direction.clone() * self.speed;
-            println!("Position: {:?}", position);
+            cumulative_vector = cumulative_vector + x_z_direction.clone();
         }
 
         if game_input.keyboard_input.is_character_pressed('s') {
-            position = position - x_z_direction.clone() * self.speed;
+            cumulative_vector = cumulative_vector - x_z_direction.clone();
         }
 
         if game_input.keyboard_input.is_character_pressed('a') {
-            let right = Vect::from_slice(&[direction[2], direction[1], direction[0]]);
-            position = position - right * self.speed;
+            let right = Vect::from_slice(&[x_z_direction[2], x_z_direction[1], -x_z_direction[0]]);
+            cumulative_vector = cumulative_vector - right;
         }
 
         if game_input.keyboard_input.is_character_pressed('d') {
-            let right = Vect::from_slice(&[direction[2], direction[1], direction[0]]);
-            position = position + right * self.speed;
+            let right = Vect::from_slice(&[x_z_direction[2], x_z_direction[1], -x_z_direction[0]]);
+            cumulative_vector = cumulative_vector + right;
         }
 
         if game_input.keyboard_input.is_key_pressed(Key::Named(NamedKey::Space)) {
-            position[1] += self.speed;
+            cumulative_vector[1] += 1.0;
         }
 
         if game_input.keyboard_input.is_key_pressed(Key::Named(NamedKey::Shift)) {
-            position[1] -= self.speed;
+            cumulative_vector[1] -= 1.0;
         }
 
+        cumulative_vector.normalize();
+        position = position + cumulative_vector * self.speed;
         self.position = position;
     }
-
-//     match key {
-//     Key::Character(key_value) if key_value == smol_str::SmolStr::from("w") => {
-//     let x_z_direction = [direction[0], direction[2]];
-//     let normalized_direction = normalize(&x_z_direction);
-//     position[0] += normalized_direction[0] * 0.1;
-//     position[2] += normalized_direction[1] * 0.1;
-//     }
-//     Key::Character(key_value) if key_value == smol_str::SmolStr::from("s") => {
-//     let x_z_direction = [direction[0], direction[2]];
-//     let normalized_direction = normalize(&x_z_direction);
-//     position[0] -= normalized_direction[0] * 0.1;
-//     position[2] -= normalized_direction[1] * 0.1;
-//     }
-//     Key::Character(key_value) if key_value == smol_str::SmolStr::from("a") => {
-//     let x_z_direction = [direction[0], direction[2]];
-//     let normalized_direction = normalize(&x_z_direction);
-//     position[0] -= normalized_direction[1] * 0.1;
-//     position[2] += normalized_direction[0] * 0.1;
-//     }
-//     Key::Character(key_value) if key_value == smol_str::SmolStr::from("d") => {
-//     let x_z_direction = [direction[0], direction[2]];
-//     let normalized_direction = normalize(&x_z_direction);
-//     position[0] += normalized_direction[1] * 0.1;
-//     position[2] -= normalized_direction[0] * 0.1;
-//     }
-//     Key::Named(NamedKey::Space) => {
-//     position[2] += 0.1;
-//     }
-//     Key::Named(NamedKey::Shift) => {
-//     position[1] -= 0.1;
-//     }
-//     _ => (),
-// }
 }
 
 fn clamp(value : f32, min : f32, max : f32) -> f32 {
