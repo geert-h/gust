@@ -53,14 +53,15 @@ impl Vect {
         root
     }
 
-    pub fn normalize(&mut self) {
+    pub fn normalize(&mut self) -> Vect {
         let norm = self.norm();
         if norm == 0.0 {
-            return;
+            return self.clone();
         }
         for i in 0..self.dim {
             self.data[i] = self.data[i] / norm;
         }
+        self.clone()
     }
 
     pub fn dot(&self, other: &Vect) -> Result<f32, VectError> {
@@ -80,7 +81,7 @@ impl Vect {
             return Err(VectError::InvalidCrossDimension);
         }
 
-        if self.dim != other.dim  {
+        if self.dim != other.dim {
             return Err(VectError::DimensionMismatch(self.dim, other.dim));
         }
 

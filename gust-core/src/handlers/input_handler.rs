@@ -1,17 +1,18 @@
 use std::collections::HashMap;
+
 use winit::dpi::PhysicalPosition;
-use winit::keyboard::{Key};
+use winit::keyboard::Key;
 
 pub struct GameInput {
-    pub keyboard_input : KeyBoardInput,
-    pub mouse_input : MouseInput,
+    pub keyboard_input: KeyBoardState,
+    pub mouse_input: MouseState,
 }
 
-pub struct KeyBoardInput {
-    pressed_keys : HashMap<Key, f32>
+pub struct KeyBoardState {
+    pressed_keys: HashMap<Key, f32>,
 }
 
-impl KeyBoardInput {
+impl KeyBoardState {
     pub fn is_key_pressed(&self, key: Key) -> bool {
         self.pressed_keys.contains_key(&key)
     }
@@ -37,7 +38,7 @@ impl KeyBoardInput {
     }
 }
 
-pub struct MouseInput {
+pub struct MouseState {
     pub mouse_position: (f32, f32),
     pub mouse_delta: (f32, f32),
     pub lmb_pressed: bool,
@@ -47,19 +48,19 @@ pub struct MouseInput {
 impl GameInput {
     pub fn new() -> Self {
         GameInput {
-            keyboard_input : KeyBoardInput {
-                pressed_keys : HashMap::new(),
+            keyboard_input: KeyBoardState {
+                pressed_keys: HashMap::new(),
             },
-            mouse_input : MouseInput {
-                mouse_position : (0.0, 0.0),
-                mouse_delta : (0.0, 0.0),
-                lmb_pressed : false,
-                rmb_pressed : false,
+            mouse_input: MouseState {
+                mouse_position: (0.0, 0.0),
+                mouse_delta: (0.0, 0.0),
+                lmb_pressed: false,
+                rmb_pressed: false,
             },
         }
     }
 
-    pub fn handle_keyboard_input(&mut self, key : Key) {
+    pub fn handle_keyboard_input(&mut self, key: Key) {
         // Check if in the pressed keys
         if self.keyboard_input.is_key_pressed(key.clone()) {
             let duration = self.keyboard_input.get_key_duration(key.clone()).unwrap();
@@ -69,7 +70,7 @@ impl GameInput {
         }
     }
 
-    pub fn handle_key_release(&mut self, key : Key) {
+    pub fn handle_key_release(&mut self, key: Key) {
         self.keyboard_input.remove_key(key);
     }
 

@@ -1,7 +1,8 @@
-use std::ops::Neg;
 use winit::keyboard::{Key, NamedKey};
+
 use gust_math::matrix::Matrix;
 use gust_math::vect::Vect;
+
 use crate::handlers::input_handler::GameInput;
 
 pub struct Player {
@@ -11,6 +12,9 @@ pub struct Player {
 }
 
 impl Player {
+    const MAX_VERTICAL_ANGLE: f32 = 179.0f32 * std::f32::consts::PI / 180.0f32;
+    const MIN_VERTICAL_ANGLE: f32 = 1.0f32 * std::f32::consts::PI / 180.0f32;
+
     pub fn new() -> Self {
         Player {
             position: Vect::new(3),
@@ -19,7 +23,7 @@ impl Player {
         }
     }
 
-    pub fn update(&mut self, game_input : &GameInput) {
+    pub fn update(&mut self, game_input: &GameInput) {
         self.update_direction(game_input);
         self.update_position(game_input);
     }
@@ -34,20 +38,25 @@ impl Player {
         let delta_x = delta_x * sensitivity;
         let delta_y = delta_y * sensitivity;
 
-        let axis = Vect::from_slice(&[0.0, 1.0, 0.0]);
+        let up = Vect::from_slice(&[0.0, 1.0, 0.0]);
 
-        let rotation_matrix = Matrix::rotation_matrix(&axis, -delta_x);
+        let rotation_matrix_side = Matrix::rotation_matrix(&up, -delta_x);
 
         let mut new_direction = direction.clone();
 
-        // We calculate the right axis of the camera by taking the cross product of the direction and the up axis
-        let right = direction.cross(&Vect::from_slice(&[0.0, 1.0, 0.0])).unwrap();
+        let right = direction.cross(&up).unwrap().normalize();
+
+        let vertical_angle = direction.dot(&up).unwrap().acos();
+
+        if vertical_angle - delta_y > Self::MAX_VERTICAL_ANGLE || vertical_angle - delta_y < Self::MIN_VERTICAL_ANGLE {
+            new_direction = rotation_matrix_side.clone() * new_direction.normalize();
+            self.direction = new_direction;
+            return;
+        }
 
         let rotation_matrix_up = Matrix::rotation_matrix(&right, delta_y);
 
-        new_direction = rotation_matrix_up * new_direction;
-
-        new_direction = rotation_matrix * new_direction;
+        new_direction = rotation_matrix_up * rotation_matrix_side * new_direction.normalize();
 
         new_direction.normalize();
 
@@ -95,7 +104,7 @@ impl Player {
     }
 }
 
-fn clamp(value : f32, min : f32, max : f32) -> f32 {
+fn clamp(value: f32, min: f32, max: f32) -> f32 {
     if value < min {
         return min;
     }
