@@ -43,6 +43,30 @@ impl Matrix {
         matrix
     }
 
+    pub fn from_slices(data: &Vec<&[f32]>) -> Self {
+        let rows = data.len();
+        let cols = data.iter().map(|slice| slice.len()).min().unwrap();
+        let mut matrix = Matrix::new((rows, cols));
+        for i in 0..rows {
+            for j in 0..cols {
+                matrix[(i, j)] = data[i][j];
+            }
+        }
+        matrix
+    }
+
+    pub fn to_vecs(&self) -> Vec<Vec<f32>> {
+        self.data.clone()
+    }
+
+    pub fn to_slices(&self) -> Vec<&[f32]> {
+        self.data.iter().map(|row| row.as_slice()).collect()
+    }
+
+    pub fn to_vects(&self) -> Vec<Vect> {
+        self.data.iter().map(|row| Vect::from_slice(row.as_slice())).collect()
+    }
+
     pub fn identity(size: usize) -> Self {
         let mut matrix = Matrix::new((size, size));
         for i in 0..size {

@@ -3,7 +3,7 @@ use winit::keyboard::{Key, NamedKey};
 use gust_math::matrix::Matrix;
 use gust_math::vect::Vect;
 
-use crate::handlers::input_handler::GameInput;
+use crate::data::game_input::GameInput;
 
 pub struct Player {
     pub position: Vect,
@@ -12,8 +12,8 @@ pub struct Player {
 }
 
 impl Player {
-    const MAX_VERTICAL_ANGLE: f32 = 179.0f32 * std::f32::consts::PI / 180.0f32;
-    const MIN_VERTICAL_ANGLE: f32 = 1.0f32 * std::f32::consts::PI / 180.0f32;
+    const MAX_VERTICAL_ANGLE: f32 = 180.0f32 * std::f32::consts::PI / 180.0f32;
+    const MIN_VERTICAL_ANGLE: f32 = 0.0f32 * std::f32::consts::PI / 180.0f32;
 
     pub fn new() -> Self {
         Player {
@@ -23,13 +23,20 @@ impl Player {
         }
     }
 
+    pub fn init() -> Self {
+        let mut player = Player::new();
+        player.position = Vect::from_slice(&[0.0, 0.0, 5.0]);
+        player.direction = Vect::from_slice(&[0.0f32, 0.0, -1.0]);
+        player
+    }
+
     pub fn update(&mut self, game_input: &GameInput) {
         self.update_direction(game_input);
         self.update_position(game_input);
     }
 
     fn update_direction(&mut self, game_input: &GameInput) {
-        let mut direction = self.direction.clone();
+        let direction = self.direction.clone();
 
         let delta_x = game_input.mouse_input.mouse_delta.0;
         let delta_y = game_input.mouse_input.mouse_delta.1;
@@ -64,7 +71,7 @@ impl Player {
     }
 
     fn update_position(&mut self, game_input: &GameInput) {
-        let mut direction = self.direction.clone();
+        let direction = self.direction.clone();
         let mut position = self.position.clone();
 
         let mut x_z_direction = Vect::from_slice(&[direction[0], 0.0, direction[2]]);
@@ -102,16 +109,4 @@ impl Player {
         position = position + cumulative_vector * self.speed;
         self.position = position;
     }
-}
-
-fn clamp(value: f32, min: f32, max: f32) -> f32 {
-    if value < min {
-        return min;
-    }
-
-    if value > max {
-        return max;
-    }
-
-    value
 }

@@ -3,46 +3,12 @@ use std::collections::HashMap;
 use winit::dpi::PhysicalPosition;
 use winit::keyboard::Key;
 
+use crate::data::keyboard_state::KeyBoardState;
+use crate::data::mouse_state::MouseState;
+
 pub struct GameInput {
     pub keyboard_input: KeyBoardState,
     pub mouse_input: MouseState,
-}
-
-pub struct KeyBoardState {
-    pressed_keys: HashMap<Key, f32>,
-}
-
-impl KeyBoardState {
-    pub fn is_key_pressed(&self, key: Key) -> bool {
-        self.pressed_keys.contains_key(&key)
-    }
-
-    pub fn is_character_pressed(&self, key: char) -> bool {
-        self.pressed_keys.contains_key(&Key::Character(smol_str::SmolStr::from(key.to_string())))
-    }
-
-    fn get_key_duration(&self, key: Key) -> Option<f32> {
-        self.pressed_keys.get(&key).map(|duration| *duration)
-    }
-
-    fn add_key(&mut self, key: Key) {
-        self.pressed_keys.insert(key, 0.0);
-    }
-
-    fn remove_key(&mut self, key: Key) {
-        self.pressed_keys.remove(&key);
-    }
-
-    fn update_duration(&mut self, key: Key, duration: f32) {
-        self.pressed_keys.insert(key, duration);
-    }
-}
-
-pub struct MouseState {
-    pub mouse_position: (f32, f32),
-    pub mouse_delta: (f32, f32),
-    pub lmb_pressed: bool,
-    pub rmb_pressed: bool,
 }
 
 impl GameInput {
