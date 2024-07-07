@@ -158,19 +158,8 @@ impl Game {
 
         let view = view_matrix(&position, &direction, &[0.0, 1.0, 0.0]);
 
-        let binding = self.camera.get_perspective();
-        let perspective2 = binding.to_slices();
-
-        // Hard copy of the perspective matrix
-        let perspective = [
-            [perspective2[0][0], perspective2[0][1], perspective2[0][2], perspective2[0][3]],
-            [perspective2[1][0], perspective2[1][1], perspective2[1][2], perspective2[1][3]],
-            [perspective2[2][0], perspective2[2][1], perspective2[2][2], perspective2[2][3]],
-            [perspective2[3][0], perspective2[3][1], perspective2[3][2], perspective2[3][3]],
-        ];
-
         uniform! {
-        perspective: perspective,
+        perspective: self.camera.get_perspective(),
         model: Matrix::homogenous_slice(),
         u_light: light,
         view : view,

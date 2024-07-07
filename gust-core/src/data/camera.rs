@@ -1,6 +1,5 @@
 use std::f32::consts::PI;
 
-use gust_math::matrix::Matrix;
 use gust_math::vect::Vect;
 
 pub struct Camera {
@@ -50,13 +49,13 @@ impl Camera {
         }
     }
 
-    pub fn get_perspective(&self) -> Matrix {
+    pub fn get_perspective(&self) -> [[f32; 4]; 4] {
         let f = 1.0 / (self.fov / 2.0).tan();
-        Matrix::from_slices(&[
-            &[f * self.aspect_ratio, 0.0, 0.0, 0.0],
-            &[0.0, f, 0.0, 0.0],
-            &[0.0, 0.0, (self.z_far + self.z_near) / (self.z_far - self.z_near), 1.0],
-            &[0.0, 0.0, -(2.0 * self.z_far * self.z_near) / (self.z_far - self.z_near), 0.0],
-        ])
+        [
+            [f * self.aspect_ratio, 0.0, 0.0, 0.0],
+            [0.0, f, 0.0, 0.0],
+            [0.0, 0.0, (self.z_far + self.z_near) / (self.z_far - self.z_near), 1.0],
+            [0.0, 0.0, -(2.0 * self.z_far * self.z_near) / (self.z_far - self.z_near), 0.0],
+        ]
     }
 }
