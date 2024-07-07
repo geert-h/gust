@@ -123,6 +123,26 @@ impl std::ops::Mul<f32> for Vect {
     }
 }
 
+impl std::ops::Mul<Vect> for f32 {
+    type Output = Vect;
+
+    fn mul(self, rhs: Vect) -> Vect {
+        let mut result = Vect::new(rhs.dim);
+        for i in 0..rhs.dim {
+            result[i] = self * rhs[i];
+        }
+        result
+    }
+}
+
+impl std::ops::Mul<Vect> for Vect {
+    type Output = f32;
+
+    fn mul(self, rhs: Vect) -> f32 {
+        self.dot(&rhs).unwrap()
+    }
+}
+
 impl std::ops::Add for Vect {
     type Output = Vect;
 

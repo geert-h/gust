@@ -9,6 +9,7 @@ use winit::window::CursorGrabMode;
 use gust_math::matrix::Matrix;
 use gust_math::vect::Vect;
 
+use crate::data::camera::Camera;
 use crate::data::game_input::GameInput;
 use crate::data::mesh::{from_wavefront_object, Mesh};
 use crate::data::player::Player;
@@ -20,6 +21,7 @@ pub struct Game {
     object: Mesh,
     pub player: Player,
     pub game_input: GameInput,
+    pub camera: Camera,
 }
 
 impl Game {
@@ -32,6 +34,7 @@ impl Game {
             player: Player::init(),
             game_input: GameInput::new(),
             object,
+            camera: Camera::init(),
         }
     }
 
@@ -131,7 +134,7 @@ impl Game {
                                     &vertex_buffer,
                                     &indices,
                                     &program,
-                                    &get_uniforms(self.player.position.to_vec().try_into().unwrap(), self.player.direction.to_vec().try_into().unwrap(), self.t, &target),
+                                    &self.get_uniforms(self.player.position.to_vec().try_into().unwrap(), self.player.direction.to_vec().try_into().unwrap(), self.t, &target),
                                     &params,
                                 )
                                 .unwrap();
@@ -148,43 +151,33 @@ impl Game {
             })
             .unwrap();
     }
-}
 
-fn get_uniforms(position: [f32; 3], direction: [f32; 3], _t: f32, target: &Frame) -> impl glium::uniforms::Uniforms {
-    let light = [1.4, 0.4, -0.7f32];
 
-    let view = view_matrix(&position, &direction, &[0.0, 1.0, 0.0]);
+    fn get_uniforms(&self, position: [f32; 3], direction: [f32; 3], _t: f32, target: &Frame) -> impl glium::uniforms::Uniforms {
+        let light = [1.4, 0.4, -0.7f32];
 
-    let perspective = {
-        let (width, height) = target.get_dimensions();
-        let aspect_ratio = height as f32 / width as f32;
+        let view = view_matrix(&position, &direction, &[0.0, 1.0, 0.0]);
 
-        let fov: f32 = std::f32::consts::PI / 3.0;
-        let z_far = 1024.0;
-        let z_near = 0.1;
+        let binding = self.camera.get_perspective();
+        let perspective2 = binding.to_slices();
 
-        let f = 1.0 / (fov / 2.0).tan();
+        // Hard copy of the perspective matrix
+        let perspective = [
+            [perspective2[0][0], perspective2[0][1], perspective2[0][2], perspective2[0][3]],
+            [perspective2[1][0], perspective2[1][1], perspective2[1][2], perspective2[1][3]],
+            [perspective2[2][0], perspective2[2][1], perspective2[2][2], perspective2[2][3]],
+            [perspective2[3][0], perspective2[3][1], perspective2[3][2], perspective2[3][3]],
+        ];
 
-        [
-            [f * aspect_ratio, 0.0, 0.0, 0.0],
-            [0.0, f, 0.0, 0.0],
-            [0.0, 0.0, (z_far + z_near) / (z_far - z_near), 1.0],
-            [0.0, 0.0, -(2.0 * z_far * z_near) / (z_far - z_near), 0.0],
-        ]
-    };
-
-    uniform! {
+        uniform! {
         perspective: perspective,
-        model: [
-            [1.0, 0.0, 0.0, 0.0],
-            [0.0, 1.0, 0.0, 0.0],
-            [0.0, 0.0, 1.0, 0.0],
-            [0.0, 0.0, 0.0, 1.0f32]
-        ],
+        model: Matrix::homogenous_slice(),
         u_light: light,
         view : view,
+        }
     }
 }
+
 
 fn view_matrix(position: &[f32; 3], direction: &[f32; 3], up: &[f32; 3]) -> [[f32; 4]; 4] {
     let f = Vect::from_slice(direction).normalize();

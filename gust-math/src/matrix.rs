@@ -43,7 +43,7 @@ impl Matrix {
         matrix
     }
 
-    pub fn from_slices(data: &Vec<&[f32]>) -> Self {
+    pub fn from_slices(data: &[&[f32]]) -> Self {
         let rows = data.len();
         let cols = data.iter().map(|slice| slice.len()).min().unwrap();
         let mut matrix = Matrix::new((rows, cols));
@@ -209,6 +209,18 @@ impl Matrix {
         matrix[(2, 2)] = t * z * z + c;
 
         matrix
+    }
+
+    pub fn homogenous_slice() -> [[f32; 4]; 4] {
+        let mut slice = [[0.0; 4]; 4];
+        for i in 0..4 {
+            for j in 0..4 {
+                if i == j {
+                    slice[i][j] = 1.0;
+                }
+            }
+        }
+        slice
     }
 }
 
