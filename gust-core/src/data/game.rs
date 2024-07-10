@@ -159,11 +159,10 @@ impl Game {
             .unwrap();
     }
 
-
     fn get_uniforms<'a>(&'a self, position: [f32; 3], direction: [f32; 3], _t: f32, texture: &'a Texture2d) -> impl Uniforms + 'a {
         let light = [1.4, 0.4, -0.7f32];
 
-        let view = view_matrix(&position, &direction, &[0.0, 1.0, 0.0]);
+        let view = view_matrix(&position, &direction, &[0.0, 0.0, 1.0]);
 
         uniform! {
             perspective: self.camera.get_perspective(),

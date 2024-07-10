@@ -1,7 +1,6 @@
-use data::wavefront_object;
-use crate::data;
+use crate::data::wavefront_object::WavefrontObject;
 
-pub fn parse_wavefront_object(file_path: &str) -> wavefront_object::WavefrontObject {
+pub fn parse_wavefront_object(file_path: &str) -> WavefrontObject {
     let file = std::fs::read_to_string(file_path).expect("Failed to read file");
 
     let mut vertices = Vec::new();
@@ -29,7 +28,7 @@ pub fn parse_wavefront_object(file_path: &str) -> wavefront_object::WavefrontObj
                 let z: f32 = parts.next().unwrap().parse().unwrap();
                 normals.push([x, y, z]);
             }
-            Some("f") =>  {
+            Some("f") => {
                 let face = parse_face(line);
                 faces.push(face);
             }
@@ -37,7 +36,7 @@ pub fn parse_wavefront_object(file_path: &str) -> wavefront_object::WavefrontObj
         }
     }
 
-    wavefront_object::WavefrontObject {
+    WavefrontObject {
         vertices,
         tex_coords,
         normals,
@@ -50,7 +49,7 @@ fn parse_face(mut line: &str) -> Vec<[u32; 3]> {
     line = line.trim_start_matches('f').trim();
     let mut faces = Vec::new();
     for face in line.split_whitespace() {
-        let mut indices : [u32; 3] = [0; 3];
+        let mut indices: [u32; 3] = [0; 3];
         for (index, value) in face.split('/').enumerate() {
             if value.is_empty() {
                 continue;

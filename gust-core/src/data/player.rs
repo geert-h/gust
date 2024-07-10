@@ -25,8 +25,8 @@ impl Player {
 
     pub fn init() -> Self {
         let mut player = Player::new();
-        player.position = Vect::from_slice(&[0.0, 0.0, 5.0]);
-        player.direction = Vect::from_slice(&[0.0f32, 0.0, -1.0]);
+        player.position = Vect::from_slice(&[-5.0, 0.0, 0.0]);
+        player.direction = Vect::from_slice(&[1.0, 0.0, 0.0]);
         player
     }
 
@@ -36,8 +36,6 @@ impl Player {
     }
 
     fn update_direction(&mut self, game_input: &GameInput) {
-        let direction = self.direction.clone();
-
         let delta_x = game_input.mouse_input.mouse_delta.0;
         let delta_y = game_input.mouse_input.mouse_delta.1;
 
@@ -45,15 +43,15 @@ impl Player {
         let delta_x = delta_x * sensitivity;
         let delta_y = delta_y * sensitivity;
 
-        let up = Vect::from_slice(&[0.0, 1.0, 0.0]);
+        let up = Vect::from_slice(&[0.0, 0.0, 1.0]);
 
         let rotation_matrix_side = Matrix::rotation_matrix(&up, -delta_x);
 
-        let mut new_direction = direction.clone();
+        let mut new_direction = self.direction.clone();
 
-        let right = direction.cross(&up).unwrap().normalize();
+        let right = self.direction.cross(&up).unwrap().normalize();
 
-        let vertical_angle = direction.dot(&up).unwrap().acos();
+        let vertical_angle = self.direction.dot(&up).unwrap().acos();
 
         if vertical_angle - delta_y > Self::MAX_VERTICAL_ANGLE || vertical_angle - delta_y < Self::MIN_VERTICAL_ANGLE {
             new_direction = rotation_matrix_side.clone() * new_direction.normalize();
@@ -74,35 +72,35 @@ impl Player {
         let direction = self.direction.clone();
         let mut position = self.position.clone();
 
-        let mut x_z_direction = Vect::from_slice(&[direction[0], 0.0, direction[2]]);
-        x_z_direction.normalize();
+        let mut x_y_direction = Vect::from_slice(&[direction[0], direction[1], 0.0]);
+        x_y_direction.normalize();
 
         let mut cumulative_vector = Vect::from_slice(&[0.0, 0.0, 0.0]);
 
         if game_input.keyboard_input.is_character_pressed('w') {
-            cumulative_vector = cumulative_vector + x_z_direction.clone();
+            cumulative_vector = cumulative_vector + x_y_direction.clone();
         }
 
         if game_input.keyboard_input.is_character_pressed('s') {
-            cumulative_vector = cumulative_vector - x_z_direction.clone();
+            cumulative_vector = cumulative_vector - x_y_direction.clone();
         }
 
         if game_input.keyboard_input.is_character_pressed('a') {
-            let right = Vect::from_slice(&[x_z_direction[2], x_z_direction[1], -x_z_direction[0]]);
-            cumulative_vector = cumulative_vector - right;
-        }
-
-        if game_input.keyboard_input.is_character_pressed('d') {
-            let right = Vect::from_slice(&[x_z_direction[2], x_z_direction[1], -x_z_direction[0]]);
+            let right = Vect::from_slice(&[x_y_direction[1], -x_y_direction[0], x_y_direction[2]]);
             cumulative_vector = cumulative_vector + right;
         }
 
+        if game_input.keyboard_input.is_character_pressed('d') {
+            let right = Vect::from_slice(&[x_y_direction[1], -x_y_direction[0], x_y_direction[2]]);
+            cumulative_vector = cumulative_vector - right;
+        }
+
         if game_input.keyboard_input.is_key_pressed(Key::Named(NamedKey::Space)) {
-            cumulative_vector[1] += 1.0;
+            cumulative_vector[2] += 1.0;
         }
 
         if game_input.keyboard_input.is_key_pressed(Key::Named(NamedKey::Shift)) {
-            cumulative_vector[1] -= 1.0;
+            cumulative_vector[2] -= 1.0;
         }
 
         cumulative_vector.normalize();
