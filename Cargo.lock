@@ -692,6 +692,7 @@ version = "0.1.0"
 dependencies = [
  "glium",
  "gust-math",
+ "image",
  "sdl2",
  "smol_str",
  "winit",

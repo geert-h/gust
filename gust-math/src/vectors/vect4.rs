@@ -1,4 +1,4 @@
-use crate::vect::Vect;
+use crate::vectors::vect::Vect;
 
 pub struct Vect4 {
     pub x: f32,
@@ -82,3 +82,32 @@ impl std::ops::Sub<Vect4> for Vect4 {
         Vect4::new(self.x - other.x, self.y - other.y, self.z - other.z, self.w - other.w)
     }
 }
+
+impl std::ops::Mul<f32> for Vect4 {
+    type Output = Vect4;
+
+    fn mul(self, rhs: f32) -> Vect4 {
+        Vect4::new(self.x * rhs, self.y * rhs, self.z * rhs, self.w * rhs)
+    }
+}
+
+impl std::ops::Neg for Vect4 {
+    type Output = Vect4;
+
+    fn neg(self) -> Vect4 {
+        Vect4::new(-self.x, -self.y, -self.z, -self.w)
+    }
+}
+
+impl std::fmt::Display for Vect4 {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "({}, {}, {}, {})", self.x, self.y, self.z, self.w)
+    }
+}
+
+impl Clone for Vect4 {
+    fn clone(&self) -> Vect4 {
+        Vect4::new(self.x, self.y, self.z, self.w)
+    }
+}
+

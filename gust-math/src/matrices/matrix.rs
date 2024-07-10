@@ -1,6 +1,6 @@
 use std::ops::{Index, IndexMut};
 
-use crate::vect::Vect;
+use crate::vectors::vect::Vect;
 
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct Matrix {

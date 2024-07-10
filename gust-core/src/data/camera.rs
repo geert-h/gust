@@ -1,6 +1,6 @@
 use std::f32::consts::PI;
 
-use gust_math::vect::Vect;
+use gust_math::vectors::vect::Vect;
 
 pub struct Camera {
     pub id: u32,

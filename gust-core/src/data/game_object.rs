@@ -1,5 +1,5 @@
-use gust_math::matrix::Matrix;
-use gust_math::vect::Vect;
+use gust_math::matrices::matrix::Matrix;
+use gust_math::vectors::vect::Vect;
 
 use crate::data::color::Color;
 use crate::data::mesh::Mesh;

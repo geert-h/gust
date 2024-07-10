@@ -135,14 +135,6 @@ impl std::ops::Mul<Vect> for f32 {
     }
 }
 
-impl std::ops::Mul<Vect> for Vect {
-    type Output = f32;
-
-    fn mul(self, rhs: Vect) -> f32 {
-        self.dot(&rhs).unwrap()
-    }
-}
-
 impl std::ops::Add for Vect {
     type Output = Vect;
 

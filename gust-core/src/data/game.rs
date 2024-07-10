@@ -1,4 +1,6 @@
-use glium::{Frame, Surface, uniform};
+use glium::{Surface, Texture2d, uniform};
+use glium::texture::RawImage2d;
+use glium::uniforms::Uniforms;
 use glium::VertexBuffer;
 use winit::dpi::PhysicalPosition;
 use winit::event::Event::WindowEvent;
@@ -6,8 +8,8 @@ use winit::event::KeyEvent;
 use winit::keyboard::Key;
 use winit::window::CursorGrabMode;
 
-use gust_math::matrix::Matrix;
-use gust_math::vect::Vect;
+use gust_math::matrices::matrix::Matrix;
+use gust_math::vectors::vect::Vect;
 
 use crate::data::camera::Camera;
 use crate::data::game_input::GameInput;
@@ -26,7 +28,7 @@ pub struct Game {
 
 impl Game {
     pub fn new() -> Self {
-        let wavefront_object = wavefront_object_parser::parse_wavefront_object("C:\\Users\\Geert\\source\\repos\\Personal\\gust\\resources\\assets\\objects\\monkey.obj");
+        let wavefront_object = wavefront_object_parser::parse_wavefront_object("C:\\Users\\Geert\\source\\repos\\Personal\\gust\\resources\\assets\\objects\\BalKubus.obj");
         let object = from_wavefront_object(wavefront_object);
 
         Game {
@@ -59,6 +61,11 @@ impl Game {
         let (window, display) = glium::backend::glutin::SimpleWindowBuilder::new()
             .with_title("Gust")
             .build(&event_loop);
+
+        let image = image::load(std::io::Cursor::new(&include_bytes!("../../../resources/assets/BallRender.png")), image::ImageFormat::Png).unwrap().to_rgba8();
+        let image_dimensions = image.dimensions();
+        let image = RawImage2d::from_raw_rgba_reversed(&image.into_raw(), image_dimensions);
+        let texture = Texture2d::new(&display, image).unwrap();
 
         window.set_cursor_grab(CursorGrabMode::Locked)
             .or_else(|_e| window.set_cursor_grab(CursorGrabMode::Confined))
@@ -134,7 +141,7 @@ impl Game {
                                     &vertex_buffer,
                                     &indices,
                                     &program,
-                                    &self.get_uniforms(self.player.position.to_vec().try_into().unwrap(), self.player.direction.to_vec().try_into().unwrap(), self.t, &target),
+                                    &self.get_uniforms(self.player.position.to_vec().try_into().unwrap(), self.player.direction.to_vec().try_into().unwrap(), self.t, &texture),
                                     &params,
                                 )
                                 .unwrap();
@@ -153,16 +160,17 @@ impl Game {
     }
 
 
-    fn get_uniforms(&self, position: [f32; 3], direction: [f32; 3], _t: f32, target: &Frame) -> impl glium::uniforms::Uniforms {
+    fn get_uniforms<'a>(&'a self, position: [f32; 3], direction: [f32; 3], _t: f32, texture: &'a Texture2d) -> impl Uniforms + 'a {
         let light = [1.4, 0.4, -0.7f32];
 
         let view = view_matrix(&position, &direction, &[0.0, 1.0, 0.0]);
 
         uniform! {
-        perspective: self.camera.get_perspective(),
-        model: Matrix::homogenous_slice(),
-        u_light: light,
-        view : view,
+            perspective: self.camera.get_perspective(),
+            model: Matrix::homogenous_slice(),
+            u_texture: texture,
+            u_light: light,
+            view : view,
         }
     }
 }

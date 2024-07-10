@@ -1,4 +1,4 @@
-use gust_math::vect::Vect;
+use gust_math::vectors::vect::Vect;
 
 use crate::data::color::Color;
 

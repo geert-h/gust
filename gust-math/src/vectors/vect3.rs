@@ -1,4 +1,4 @@
-use crate::vect::Vect;
+use crate::vectors::vect::Vect;
 
 pub struct Vect3 {
     pub x: f32,
@@ -114,15 +114,6 @@ impl std::ops::Mul<Vect3> for f32 {
             y: self * rhs.y,
             z: self * rhs.z,
         }
-    }
-}
-
-
-impl std::ops::Mul<Vect3> for Vect3 {
-    type Output = f32;
-
-    fn mul(self, rhs: Vect3) -> f32 {
-        self.dot(&rhs)
     }
 }
 

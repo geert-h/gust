@@ -1,4 +1,2 @@
-pub mod vect;
-pub mod matrix;
-mod vect3;
-mod vect4;
+pub mod vectors;
+pub mod matrices;
