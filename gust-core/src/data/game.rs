@@ -1,11 +1,9 @@
 use glium::{Surface, Texture2d, uniform};
-use glium::texture::RawImage2d;
 use glium::uniforms::Uniforms;
 use glium::VertexBuffer;
 use winit::dpi::PhysicalPosition;
 use winit::event::Event::WindowEvent;
 use winit::event::KeyEvent;
-use winit::keyboard::Key;
 use winit::window::CursorGrabMode;
 
 use gust_math::matrices::matrix::Matrix;
@@ -13,14 +11,13 @@ use gust_math::vectors::vect::Vect;
 
 use crate::data::camera::Camera;
 use crate::data::game_input::GameInput;
-use crate::data::mesh::{from_wavefront_object, Mesh};
+use crate::data::game_object::GameObject;
 use crate::data::player::Player;
 use crate::data::vertex::Vertex;
-use crate::parsers::wavefront_object_parser;
 
 pub struct Game {
     t: f32,
-    object: Mesh,
+    object: GameObject,
     pub player: Player,
     pub game_input: GameInput,
     pub camera: Camera,
@@ -28,9 +25,7 @@ pub struct Game {
 
 impl Game {
     pub fn new() -> Self {
-        let wavefront_object = wavefront_object_parser::parse_wavefront_object("C:\\Users\\Geert\\source\\repos\\Personal\\gust\\resources\\assets\\objects\\BalKubus.obj");
-        let object = from_wavefront_object(wavefront_object);
-
+        let object = GameObject::init();
         Game {
             t: 0.0,
             player: Player::init(),
@@ -47,10 +42,6 @@ impl Game {
         self.player.update(&self.game_input);
     }
 
-    pub fn handle_keyboard_input(&mut self, key: Key) {
-        self.game_input.handle_keyboard_input(key);
-    }
-
     pub fn run(&mut self) {
         let vert_shader_string = include_str!("../../../resources/shaders/vert.glsl");
         let frac_shader_string = include_str!("../../../resources/shaders/frac.glsl");
@@ -62,10 +53,7 @@ impl Game {
             .with_title("Gust")
             .build(&event_loop);
 
-        let image = image::load(std::io::Cursor::new(&include_bytes!("../../../resources/assets/BallRender.png")), image::ImageFormat::Png).unwrap().to_rgba8();
-        let image_dimensions = image.dimensions();
-        let image = RawImage2d::from_raw_rgba_reversed(&image.into_raw(), image_dimensions);
-        let texture = Texture2d::new(&display, image).unwrap();
+        let texture = self.object.get_texture(&display);
 
         window.set_cursor_grab(CursorGrabMode::Locked)
             .or_else(|_e| window.set_cursor_grab(CursorGrabMode::Confined))
@@ -73,7 +61,7 @@ impl Game {
 
         window.set_cursor_visible(false);
 
-        let flattened_triangles: Vec<Vertex> = self.object.triangles
+        let flattened_triangles: Vec<Vertex> = self.object.mesh.triangles
             .iter()
             .flat_map(|triangle| triangle
                 .iter()

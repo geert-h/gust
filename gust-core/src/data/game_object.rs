@@ -1,6 +1,6 @@
-use glium::{Display, Texture2d};
+use glium::Display;
 use glium::glutin::surface::WindowSurface;
-use glium::texture::RawImage2d;
+use image::RgbaImage;
 
 use gust_math::matrices::matrix::Matrix;
 use gust_math::vectors::vect::Vect;
@@ -17,11 +17,11 @@ pub struct GameObject {
     pub scale: f32,
     pub mesh: Mesh,
     pub color: Color,
-    pub texture: Texture2d,
+    image: RgbaImage,
 }
 
 impl GameObject {
-    pub fn new(id: u32, name: String, position: Vect, rotation: Matrix, scale: f32, mesh: Mesh, color: Color, texture: Texture2d) -> Self {
+    pub fn new(id: u32, name: String, position: Vect, rotation: Matrix, scale: f32, mesh: Mesh, color: Color, image: RgbaImage) -> Self {
         GameObject {
             id,
             name,
@@ -30,11 +30,11 @@ impl GameObject {
             scale,
             mesh,
             color,
-            texture,
+            image,
         }
     }
 
-    pub fn init(display: &Display<WindowSurface>) -> Self {
+    pub fn init() -> Self {
         let wavefront_object = wavefront_object_parser::parse_wavefront_object("C:\\Users\\Geert\\source\\repos\\Personal\\gust\\resources\\assets\\objects\\BalKubus.obj");
         let mesh = from_wavefront_object(wavefront_object);
 
@@ -44,10 +44,12 @@ impl GameObject {
         let color = Color::new(1.0, 1.0, 1.0, 1.0);
 
         let image = image::load(std::io::Cursor::new(&include_bytes!("../../../resources/assets/BallRender.png")), image::ImageFormat::Png).unwrap().to_rgba8();
-        let image_dimensions = image.dimensions();
-        let image = RawImage2d::from_raw_rgba_reversed(&image.into_raw(), image_dimensions);
-        let texture = Texture2d::new(display, image).unwrap();
 
-        GameObject::new(0, "cube".to_string(), position, rotation, scale, mesh, color, texture)
+        GameObject::new(0, "cube".to_string(), position, rotation, scale, mesh, color, image)
+    }
+
+    pub fn get_texture(&self, display: &Display<WindowSurface>) -> glium::texture::Texture2d {
+        let image = glium::texture::RawImage2d::from_raw_rgba_reversed(&self.image.clone().into_raw(), self.image.dimensions());
+        glium::texture::Texture2d::new(display, image).unwrap()
     }
 }
