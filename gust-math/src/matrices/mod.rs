@@ -1,2 +1,3 @@
 pub mod matrix;
-mod mat3;
+pub mod mat3;
+pub mod mat4;

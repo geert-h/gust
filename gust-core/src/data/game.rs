@@ -6,8 +6,8 @@ use winit::event::Event::WindowEvent;
 use winit::event::KeyEvent;
 use winit::window::CursorGrabMode;
 
-use gust_math::matrices::matrix::Matrix;
-use gust_math::vectors::vect::Vect;
+use gust_math::matrices::mat4::Mat4;
+use gust_math::vectors::vect3::Vect3;
 
 use crate::data::camera::Camera;
 use crate::data::game_input::GameInput;
@@ -154,7 +154,7 @@ impl Game {
 
         uniform! {
             perspective: self.camera.get_perspective(),
-            model: Matrix::homogenous_slice(),
+            model: Mat4::identity().to_slices(),
             u_texture: texture,
             u_light: light,
             view : view,
@@ -164,11 +164,11 @@ impl Game {
 
 
 fn view_matrix(position: &[f32; 3], direction: &[f32; 3], up: &[f32; 3]) -> [[f32; 4]; 4] {
-    let f = Vect::from_slice(direction).normalize();
+    let f = Vect3::from_slice(direction).normalize();
 
-    let s = &Vect::from_slice(up).normalize().cross(&f).unwrap().normalize();
+    let s = Vect3::from_slice(up).normalize().cross(&f).normalize();
 
-    let u = f.cross(&s).unwrap().normalize();
+    let u = f.cross(&s).normalize();
 
     let p = [
         -position[0] * s[0] - position[1] * s[1] - position[2] * s[2],
@@ -176,16 +176,9 @@ fn view_matrix(position: &[f32; 3], direction: &[f32; 3], up: &[f32; 3]) -> [[f3
         -position[0] * f[0] - position[1] * f[1] - position[2] * f[2],
     ];
 
-    let p = Vect::from_slice(&p);
+    let p = Vect3::from_slice(&p);
 
-    let res = Matrix::from_vects([s.clone(), u.clone(), f.clone(), p.clone()].to_vec());
+    let res = Mat4::from_vects([s.to_vect4(0.0), u.to_vect4(0.0), f.to_vect4(0.0), p.to_vect4(1.0)]).transpose();
 
-    let slices = res.to_slices();
-
-    [
-        [slices[0][0], slices[1][0], slices[2][0], 0.0],
-        [slices[0][1], slices[1][1], slices[2][1], 0.0],
-        [slices[0][2], slices[1][2], slices[2][2], 0.0],
-        [slices[3][0], slices[3][1], slices[3][2], 1.0],
-    ]
+    res.to_slices()
 }

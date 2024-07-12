@@ -1,3 +1,5 @@
+use std::ops::{Index, IndexMut};
+
 use crate::vectors::vect::Vect;
 
 pub struct Vect4 {
@@ -8,8 +10,13 @@ pub struct Vect4 {
 }
 
 impl Vect4 {
-    pub fn new(x: f32, y: f32, z: f32, w: f32) -> Vect4 {
-        Vect4 { x, y, z, w }
+    pub fn new() -> Vect4 {
+        Vect4 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+            w: 0.0,
+        }
     }
 
     pub fn from_slice(slice: &[f32; 4]) -> Vect4 {
@@ -71,7 +78,7 @@ impl std::ops::Add<Vect4> for Vect4 {
     type Output = Vect4;
 
     fn add(self, other: Vect4) -> Vect4 {
-        Vect4::new(self.x + other.x, self.y + other.y, self.z + other.z, self.w + other.w)
+        Vect4::from_slice(&[self.x + other.x, self.y + other.y, self.z + other.z, self.w + other.w])
     }
 }
 
@@ -79,7 +86,7 @@ impl std::ops::Sub<Vect4> for Vect4 {
     type Output = Vect4;
 
     fn sub(self, other: Vect4) -> Vect4 {
-        Vect4::new(self.x - other.x, self.y - other.y, self.z - other.z, self.w - other.w)
+        Vect4::from_slice(&[self.x - other.x, self.y - other.y, self.z - other.z, self.w - other.w])
     }
 }
 
@@ -87,7 +94,7 @@ impl std::ops::Mul<f32> for Vect4 {
     type Output = Vect4;
 
     fn mul(self, rhs: f32) -> Vect4 {
-        Vect4::new(self.x * rhs, self.y * rhs, self.z * rhs, self.w * rhs)
+        Vect4::from_slice(&[self.x * rhs, self.y * rhs, self.z * rhs, self.w * rhs])
     }
 }
 
@@ -95,7 +102,7 @@ impl std::ops::Neg for Vect4 {
     type Output = Vect4;
 
     fn neg(self) -> Vect4 {
-        Vect4::new(-self.x, -self.y, -self.z, -self.w)
+        Vect4::from_slice(&[-self.x, -self.y, -self.z, -self.w])
     }
 }
 
@@ -107,7 +114,32 @@ impl std::fmt::Display for Vect4 {
 
 impl Clone for Vect4 {
     fn clone(&self) -> Vect4 {
-        Vect4::new(self.x, self.y, self.z, self.w)
+        Vect4::from_slice(&[self.x, self.y, self.z, self.w])
     }
 }
 
+impl Index<usize> for Vect4 {
+    type Output = f32;
+
+    fn index(&self, index: usize) -> &f32 {
+        match index {
+            0 => &self.x,
+            1 => &self.y,
+            2 => &self.z,
+            3 => &self.w,
+            _ => panic!("Index out of bounds"),
+        }
+    }
+}
+
+impl IndexMut<usize> for Vect4 {
+    fn index_mut(&mut self, index: usize) -> &mut f32 {
+        match index {
+            0 => &mut self.x,
+            1 => &mut self.y,
+            2 => &mut self.z,
+            3 => &mut self.w,
+            _ => panic!("Index out of bounds"),
+        }
+    }
+}

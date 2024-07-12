@@ -1,3 +1,6 @@
+use std::ops::{Index, IndexMut};
+
+use crate::vectors::vect4::Vect4;
 use crate::vectors::vect::Vect;
 
 pub struct Vect3 {
@@ -7,8 +10,12 @@ pub struct Vect3 {
 }
 
 impl Vect3 {
-    pub fn new(x: f32, y: f32, z: f32) -> Vect3 {
-        Vect3 { x, y, z }
+    pub fn new() -> Vect3 {
+        Vect3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        }
     }
 
     pub fn from_slice(data: &[f32]) -> Vect3 {
@@ -57,6 +64,10 @@ impl Vect3 {
     pub fn to_vect(&self) -> Vect {
         Vect::from_slice(&self.to_array())
     }
+
+    pub fn to_vect4(&self, value: f32) -> Vect4 {
+        Vect4::from_slice(&[self.x, self.y, self.z, value])
+    }
 }
 
 impl Clone for Vect3 {
@@ -77,6 +88,30 @@ impl std::ops::Add<Vect3> for Vect3 {
             x: self.x + other.x,
             y: self.y + other.y,
             z: self.z + other.z,
+        }
+    }
+}
+
+impl Index<usize> for Vect3 {
+    type Output = f32;
+
+    fn index(&self, index: usize) -> &f32 {
+        match index {
+            0 => &self.x,
+            1 => &self.y,
+            2 => &self.z,
+            _ => panic!("Invalid index"),
+        }
+    }
+}
+
+impl IndexMut<usize> for Vect3 {
+    fn index_mut(&mut self, index: usize) -> &mut f32 {
+        match index {
+            0 => &mut self.x,
+            1 => &mut self.y,
+            2 => &mut self.z,
+            _ => panic!("Invalid index"),
         }
     }
 }
