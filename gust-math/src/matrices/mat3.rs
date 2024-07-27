@@ -1,3 +1,6 @@
+use std::ops::{Index, IndexMut};
+use crate::vectors::vect3::Vect3;
+
 pub struct Mat3 {
     pub data: [[f32; 3]; 3],
 }
@@ -7,6 +10,14 @@ impl Mat3 {
         Mat3 {
             data: [[0.0; 3]; 3],
         }
+    }
+
+    pub fn identity() -> Mat3 {
+        let mut mat = Mat3::new();
+        for i in 0..3 {
+            mat.data[i][i] = 1.0;
+        }
+        mat
     }
 
     pub fn from_slice(slice: &[[f32; 3]; 3]) -> Mat3 {
@@ -77,6 +88,70 @@ impl Mat3 {
         for i in 0..3 {
             for j in 0..3 {
                 res += self.data[i][j] * other.data[i][j];
+            }
+        }
+        res
+    }
+
+    pub fn rotation_matrix(axis: &Vect3, angle: f32) -> Mat3 {
+        let mut res = Mat3::new();
+        let c = angle.cos();
+        let s = angle.sin();
+        let t = 1.0 - c;
+        let x = axis[0];
+        let y = axis[1];
+        let z = axis[2];
+        res.data[0][0] = t * x * x + c;
+        res.data[0][1] = t * x * y - s * z;
+        res.data[0][2] = t * x * z + s * y;
+        res.data[1][0] = t * x * y + s * z;
+        res.data[1][1] = t * y * y + c;
+        res.data[1][2] = t * y * z - s * x;
+        res.data[2][0] = t * x * z - s * y;
+        res.data[2][1] = t * y * z + s * x;
+        res.data[2][2] = t * z * z + c;
+        res
+    }
+}
+
+impl Clone for Mat3 {
+    fn clone(&self) -> Mat3 {
+        Mat3 {
+            data: self.data.clone(),
+        }
+    }
+}
+
+impl Index<usize> for Mat3 {
+    type Output = [f32; 3];
+
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.data[index]
+    }
+}
+
+impl IndexMut<usize> for Mat3 {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        &mut self.data[index]
+    }
+}
+
+impl std::ops::Mul<Mat3> for Mat3 {
+    type Output = Mat3;
+
+    fn mul(self, other: Mat3) -> Mat3 {
+        self.cross(&other)
+    }
+}
+
+impl std::ops::Mul<Vect3> for Mat3 {
+    type Output = Vect3;
+
+    fn mul(self, other: Vect3) -> Vect3 {
+        let mut res = Vect3::new();
+        for i in 0..3 {
+            for j in 0..3 {
+                res[i] += self.data[i][j] * other[j];
             }
         }
         res

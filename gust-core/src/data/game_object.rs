@@ -1,10 +1,8 @@
 use glium::Display;
 use glium::glutin::surface::WindowSurface;
 use image::RgbaImage;
-
-use gust_math::matrices::matrix::Matrix;
-use gust_math::vectors::vect::Vect;
-
+use gust_math::matrices::mat3::Mat3;
+use gust_math::vectors::vect3::Vect3;
 use crate::data::color::Color;
 use crate::data::mesh::{from_wavefront_object, Mesh};
 use crate::parsers::wavefront_object_parser;
@@ -12,8 +10,8 @@ use crate::parsers::wavefront_object_parser;
 pub struct GameObject {
     pub id: u32,
     pub name: String,
-    pub position: Vect,
-    pub rotation: Matrix,
+    pub position: Vect3,
+    pub rotation: Mat3,
     pub scale: f32,
     pub mesh: Mesh,
     pub color: Color,
@@ -21,7 +19,7 @@ pub struct GameObject {
 }
 
 impl GameObject {
-    pub fn new(id: u32, name: String, position: Vect, rotation: Matrix, scale: f32, mesh: Mesh, color: Color, image: RgbaImage) -> Self {
+    pub fn new(id: u32, name: String, position: Vect3, rotation: Mat3, scale: f32, mesh: Mesh, color: Color, image: RgbaImage) -> Self {
         GameObject {
             id,
             name,
@@ -38,8 +36,8 @@ impl GameObject {
         let wavefront_object = wavefront_object_parser::parse_wavefront_object("C:\\Users\\Geert\\source\\repos\\Personal\\gust\\resources\\assets\\objects\\BalKubus.obj");
         let mesh = from_wavefront_object(wavefront_object);
 
-        let position = Vect::from_slice(&[0.0, 0.0, 0.0]);
-        let rotation = Matrix::identity(3);
+        let position = Vect3::from_slice(&[0.0, 0.0, 0.0]);
+        let rotation = Mat3::identity();
         let scale = 1.0;
         let color = Color::new(1.0, 1.0, 1.0, 1.0);
 

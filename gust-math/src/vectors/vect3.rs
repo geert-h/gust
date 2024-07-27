@@ -1,5 +1,4 @@
 use std::ops::{Index, IndexMut};
-
 use crate::vectors::vect4::Vect4;
 use crate::vectors::vect::Vect;
 

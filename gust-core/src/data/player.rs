@@ -1,13 +1,11 @@
 use winit::keyboard::{Key, NamedKey};
-
-use gust_math::matrices::matrix::Matrix;
-use gust_math::vectors::vect::Vect;
-
+use gust_math::matrices::mat3::Mat3;
+use gust_math::vectors::vect3::Vect3;
 use crate::data::game_input::GameInput;
 
 pub struct Player {
-    pub position: Vect,
-    pub direction: Vect,
+    pub position: Vect3,
+    pub direction: Vect3,
     pub speed: f32,
 }
 
@@ -17,16 +15,16 @@ impl Player {
 
     pub fn new() -> Self {
         Player {
-            position: Vect::new(3),
-            direction: Vect::new(3),
+            position: Vect3::new(),
+            direction: Vect3::new(),
             speed: 0.05,
         }
     }
 
     pub fn init() -> Self {
         let mut player = Player::new();
-        player.position = Vect::from_slice(&[-5.0, 0.0, 0.0]);
-        player.direction = Vect::from_slice(&[1.0, 0.0, 0.0]);
+        player.position = Vect3::from_slice(&[-5.0, 0.0, 0.0]);
+        player.direction = Vect3::from_slice(&[1.0, 0.0, 0.0]);
         player
     }
 
@@ -43,15 +41,15 @@ impl Player {
         let delta_x = delta_x * sensitivity;
         let delta_y = delta_y * sensitivity;
 
-        let up = Vect::from_slice(&[0.0, 0.0, 1.0]);
+        let up = Vect3::from_slice(&[0.0, 0.0, 1.0]);
 
-        let rotation_matrix_side = Matrix::rotation_matrix(&up, -delta_x);
+        let rotation_matrix_side = Mat3::rotation_matrix(&up, -delta_x);
 
         let mut new_direction = self.direction.clone();
 
-        let right = self.direction.cross(&up).unwrap().normalize();
+        let right = self.direction.cross(&up).normalize();
 
-        let vertical_angle = self.direction.dot(&up).unwrap().acos();
+        let vertical_angle = self.direction.dot(&up).acos();
 
         if vertical_angle - delta_y > Self::MAX_VERTICAL_ANGLE || vertical_angle - delta_y < Self::MIN_VERTICAL_ANGLE {
             new_direction = rotation_matrix_side.clone() * new_direction.normalize();
@@ -59,7 +57,7 @@ impl Player {
             return;
         }
 
-        let rotation_matrix_up = Matrix::rotation_matrix(&right, delta_y);
+        let rotation_matrix_up = Mat3::rotation_matrix(&right, delta_y);
 
         new_direction = rotation_matrix_up * rotation_matrix_side * new_direction.normalize();
 
@@ -72,10 +70,10 @@ impl Player {
         let direction = self.direction.clone();
         let mut position = self.position.clone();
 
-        let mut x_y_direction = Vect::from_slice(&[direction[0], direction[1], 0.0]);
+        let mut x_y_direction = Vect3::from_slice(&[direction[0], direction[1], 0.0]);
         x_y_direction.normalize();
 
-        let mut cumulative_vector = Vect::from_slice(&[0.0, 0.0, 0.0]);
+        let mut cumulative_vector = Vect3::from_slice(&[0.0, 0.0, 0.0]);
 
         if game_input.keyboard_input.is_character_pressed('w') {
             cumulative_vector = cumulative_vector + x_y_direction.clone();
@@ -86,12 +84,12 @@ impl Player {
         }
 
         if game_input.keyboard_input.is_character_pressed('a') {
-            let right = Vect::from_slice(&[x_y_direction[1], -x_y_direction[0], x_y_direction[2]]);
+            let right = Vect3::from_slice(&[x_y_direction[1], -x_y_direction[0], x_y_direction[2]]);
             cumulative_vector = cumulative_vector + right;
         }
 
         if game_input.keyboard_input.is_character_pressed('d') {
-            let right = Vect::from_slice(&[x_y_direction[1], -x_y_direction[0], x_y_direction[2]]);
+            let right = Vect3::from_slice(&[x_y_direction[1], -x_y_direction[0], x_y_direction[2]]);
             cumulative_vector = cumulative_vector - right;
         }
 
