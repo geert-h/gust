@@ -180,5 +180,12 @@ fn view_matrix(position: &[f32; 3], direction: &[f32; 3], up: &[f32; 3]) -> [[f3
 
     let res = Mat4::from_vects([s.to_vect4(0.0), u.to_vect4(0.0), f.to_vect4(0.0), p.to_vect4(1.0)]).transpose();
 
-    res.to_slices()
+    let slices = res.to_slices();
+
+    [
+        [slices[0][0], slices[1][0], slices[2][0], 0.0],
+        [slices[0][1], slices[1][1], slices[2][1], 0.0],
+        [slices[0][2], slices[1][2], slices[2][2], 0.0],
+        [slices[3][0], slices[3][1], slices[3][2], 1.0],
+    ]
 }
