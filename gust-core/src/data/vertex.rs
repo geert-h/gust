@@ -8,4 +8,10 @@ pub struct Vertex {
     pub tex_coords: [f32; 2],
 }
 
+impl Vertex {
+    pub fn set_position(&mut self, position: [f32; 3]) {
+        self.position = position;
+    }
+}
+
 implement_vertex!(Vertex, position, normal, tex_coords);

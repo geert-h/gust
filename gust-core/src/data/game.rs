@@ -17,7 +17,7 @@ use crate::objects::game_object::GameObject;
 
 pub struct Game {
     t: f32,
-    object: GameObject,
+    objects: Vec<GameObject>,
     pub player: Player,
     pub game_input: GameInput,
     pub camera: Camera,
@@ -25,12 +25,13 @@ pub struct Game {
 
 impl Game {
     pub fn new() -> Self {
-        let object = GameObject::init();
+        let object = GameObject::init_floor_object();
+        let object2 = GameObject::init(10.0);
         Game {
             t: 0.0,
             player: Player::init(),
             game_input: GameInput::new(),
-            object,
+            objects: vec![object, object2],
             camera: Camera::init(),
         }
     }
@@ -53,7 +54,7 @@ impl Game {
             .with_title("Gust")
             .build(&event_loop);
 
-        let texture = self.object.get_texture(&display);
+        let textures: Vec<_> = self.objects.iter().map(|object| object.get_texture(&display)).collect();
 
         window.set_cursor_grab(CursorGrabMode::Locked)
             .or_else(|_e| window.set_cursor_grab(CursorGrabMode::Confined))
@@ -61,13 +62,13 @@ impl Game {
 
         window.set_cursor_visible(false);
 
-        let flattened_triangles: Vec<Vertex> = self.object.mesh.triangles
+        let flattened_triangles: Vec<Vertex> = self.objects.iter().flat_map(|object| object.mesh.triangles
             .iter()
             .flat_map(|triangle| triangle
                 .iter()
                 .cloned()
             )
-            .collect();
+        ).collect();
 
         let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
 
@@ -124,16 +125,24 @@ impl Game {
 
                             let mut target = display.draw();
                             target.clear_color_and_depth((0.3, 0.3, 0.4, 1.0), 1.0);
-                            target
-                                .draw(
-                                    &vertex_buffer,
-                                    &indices,
-                                    &program,
-                                    &self.get_uniforms(self.player.position.to_vec().try_into().unwrap(), self.player.direction.to_vec().try_into().unwrap(), self.t, &texture),
-                                    &params,
-                                )
-                                .unwrap();
 
+                            for (object, texture) in self.objects.iter().zip(&textures) {
+                                let flattened_triangles: Vec<Vertex> = object.mesh.triangles
+                                    .iter()
+                                    .flat_map(|triangle| triangle.iter().cloned())
+                                    .collect();
+
+                                let vertex_buffer = VertexBuffer::new(&display, &flattened_triangles).unwrap();
+                                target
+                                    .draw(
+                                        &vertex_buffer,
+                                        &indices,
+                                        &program,
+                                        &self.get_uniforms(self.player.position.to_vec().try_into().unwrap(), self.player.direction.to_vec().try_into().unwrap(), self.t, &texture),
+                                        &params,
+                                    )
+                                    .unwrap();
+                            }
                             target.finish().unwrap();
                         }
                         _ => (),
