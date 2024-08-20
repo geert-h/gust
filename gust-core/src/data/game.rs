@@ -11,9 +11,9 @@ use gust_math::vectors::vect3::Vect3;
 
 use crate::data::camera::Camera;
 use crate::data::game_input::GameInput;
-use crate::data::game_object::GameObject;
 use crate::data::player::Player;
 use crate::data::vertex::Vertex;
+use crate::objects::game_object::GameObject;
 
 pub struct Game {
     t: f32,

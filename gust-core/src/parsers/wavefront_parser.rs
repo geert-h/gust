@@ -1,4 +1,4 @@
-use crate::data::wavefront_object::WavefrontObject;
+use crate::objects::intermediaries::wavefront_object::WavefrontObject;
 
 pub fn parse_wavefront_object(file_path: &str) -> WavefrontObject {
     let file = std::fs::read_to_string(file_path).expect("Failed to read file");

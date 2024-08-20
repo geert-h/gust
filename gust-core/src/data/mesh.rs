@@ -1,5 +1,5 @@
 use crate::data::vertex::Vertex;
-use crate::data::wavefront_object::WavefrontObject;
+use crate::objects::intermediaries::wavefront_object::WavefrontObject;
 
 #[derive(Debug)]
 pub struct Mesh {
@@ -34,7 +34,7 @@ fn polygon_to_triangles(polygon: Vec<Vertex>) -> Vec<[Vertex; 3]> {
 
     // it is important that every triangle has the same winding order
     for i in 1..polygon.len() - 1 {
-        triangles.push([polygon[0].clone(), polygon[i+1].clone(), polygon[i].clone()]);
+        triangles.push([polygon[0].clone(), polygon[i + 1].clone(), polygon[i].clone()]);
     }
 
     triangles

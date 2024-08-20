@@ -1,1 +1,1 @@
-pub mod wavefront_object_parser;
+pub mod wavefront_parser;
