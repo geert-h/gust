@@ -1,7 +1,5 @@
 use std::ops::{Index, IndexMut};
 
-use crate::vectors::vect::Vect;
-
 pub struct Vect4 {
     pub x: f32,
     pub y: f32,
@@ -34,14 +32,6 @@ impl Vect4 {
 
     pub fn to_vec(&self) -> Vec<f32> {
         vec![self.x, self.y, self.z, self.w]
-    }
-
-    pub fn to_vect(&self) -> Vect {
-        Vect::from_slice(&self.to_array())
-    }
-
-    pub fn to_vect3(&self) -> Vect {
-        Vect::from_slice(&[self.x, self.y, self.z])
     }
 
     pub fn norm(&self) -> f32 {

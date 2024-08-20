@@ -1,12 +1,12 @@
 use std::f32::consts::PI;
 
-use gust_math::vectors::vect::Vect;
+use gust_math::vectors::vect3::Vect3;
 
 pub struct Camera {
     pub id: u32,
-    pub position: Vect,
-    pub direction: Vect,
-    pub up: Vect,
+    pub position: Vect3,
+    pub direction: Vect3,
+    pub up: Vect3,
     pub fov: f32,
     pub z_far: f32,
     pub z_near: f32,
@@ -16,9 +16,9 @@ pub struct Camera {
 impl Camera {
     pub fn new(
         id: u32,
-        position: Vect,
-        direction: Vect,
-        up: Vect,
+        position: Vect3,
+        direction: Vect3,
+        up: Vect3,
         fov: f32,
         z_far: f32,
         z_near: f32,
@@ -39,9 +39,9 @@ impl Camera {
     pub fn init() -> Camera {
         Camera {
             id: 0,
-            position: Vect::from_slice(&[0.0, 0.0, 0.0]),
-            direction: Vect::from_slice(&[0.0, 0.0, 0.0]),
-            up: Vect::from_slice(&[0.0, 0.0, 0.0]),
+            position: Vect3::from_slice(&[0.0, 0.0, 0.0]),
+            direction: Vect3::from_slice(&[0.0, 0.0, 0.0]),
+            up: Vect3::from_slice(&[0.0, 0.0, 0.0]),
             fov: PI / 3.0,
             z_far: 1024.0,
             z_near: 0.1,

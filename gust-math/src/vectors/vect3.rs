@@ -1,6 +1,6 @@
 use std::ops::{Index, IndexMut};
+
 use crate::vectors::vect4::Vect4;
-use crate::vectors::vect::Vect;
 
 pub struct Vect3 {
     pub x: f32,
@@ -58,10 +58,6 @@ impl Vect3 {
 
     pub fn to_vec(&self) -> Vec<f32> {
         vec![self.x, self.y, self.z]
-    }
-
-    pub fn to_vect(&self) -> Vect {
-        Vect::from_slice(&self.to_array())
     }
 
     pub fn to_vect4(&self, value: f32) -> Vect4 {
