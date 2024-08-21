@@ -2,13 +2,7 @@
 
 struct Light {
     vec3 position;
-    vec3 color;
-};
-
-struct Object {
-    vec3 position;
-    vec3 scale;
-    mat4 rotation;
+    vec4 color;
 };
 
 layout (location = 0) in vec3 position;
