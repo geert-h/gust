@@ -26,7 +26,7 @@ pub struct Game {
 impl Game {
     pub fn new() -> Self {
         let object = GameObject::init_floor_object();
-        let object2 = GameObject::init(10.0);
+        let object2 = GameObject::init();
         Game {
             t: 0.0,
             player: Player::init(),
@@ -62,17 +62,8 @@ impl Game {
 
         window.set_cursor_visible(false);
 
-        let flattened_triangles: Vec<Vertex> = self.objects.iter().flat_map(|object| object.mesh.triangles
-            .iter()
-            .flat_map(|triangle| triangle
-                .iter()
-                .cloned()
-            )
-        ).collect();
-
         let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
 
-        let vertex_buffer = VertexBuffer::new(&display, &flattened_triangles).unwrap();
         let mut mouse_position = PhysicalPosition::new(400.0, 240.0);
 
         event_loop
