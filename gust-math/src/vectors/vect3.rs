@@ -9,11 +9,11 @@ pub struct Vect3 {
 }
 
 impl Vect3 {
-    pub fn new() -> Vect3 {
+    pub fn new(x: f32, y: f32, z: f32) -> Vect3 {
         Vect3 {
-            x: 0.0,
-            y: 0.0,
-            z: 0.0,
+            x,
+            y,
+            z,
         }
     }
 

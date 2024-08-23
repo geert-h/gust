@@ -156,7 +156,7 @@ impl std::ops::Mul<Vect3> for Mat4 {
     type Output = Vect3;
 
     fn mul(self, other: Vect3) -> Vect3 {
-        let mut vec = Vect3::new();
+        let mut vec = Vect3::new(0.0, 0.0, 0.0);
         for i in 0..3 {
             vec[i] = self.data[i][0] * other[0]
                 + self.data[i][1] * other[1]

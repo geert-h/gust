@@ -1,4 +1,5 @@
 use std::ops::{Index, IndexMut};
+
 use crate::vectors::vect3::Vect3;
 
 pub struct Mat3 {
@@ -148,7 +149,7 @@ impl std::ops::Mul<Vect3> for Mat3 {
     type Output = Vect3;
 
     fn mul(self, other: Vect3) -> Vect3 {
-        let mut res = Vect3::new();
+        let mut res = Vect3::new(0.0, 0.0, 0.0);
         for i in 0..3 {
             for j in 0..3 {
                 res[i] += self.data[i][j] * other[j];
