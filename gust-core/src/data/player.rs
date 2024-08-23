@@ -1,6 +1,8 @@
 use winit::keyboard::{Key, NamedKey};
+
 use gust_math::matrices::mat3::Mat3;
 use gust_math::vectors::vect3::Vect3;
+
 use crate::data::game_input::GameInput;
 
 pub struct Player {
@@ -15,8 +17,8 @@ impl Player {
 
     pub fn new() -> Self {
         Player {
-            position: Vect3::new(),
-            direction: Vect3::new(),
+            position: Vect3::new(0.0, 0.0, 0.0),
+            direction: Vect3::new(0.0, 0.0, 0.0),
             speed: 0.05,
         }
     }

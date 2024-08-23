@@ -10,7 +10,9 @@ use gust_math::matrices::mat4::Mat4;
 use gust_math::vectors::vect3::Vect3;
 
 use crate::data::camera::Camera;
+use crate::data::color::Color;
 use crate::data::game_input::GameInput;
+use crate::data::light::Light;
 use crate::data::player::Player;
 use crate::data::vertex::Vertex;
 use crate::objects::game_object::GameObject;
@@ -18,6 +20,7 @@ use crate::objects::game_object::GameObject;
 pub struct Game {
     t: f32,
     objects: Vec<GameObject>,
+    lights: Vec<Light>,
     pub player: Player,
     pub game_input: GameInput,
     pub camera: Camera,
@@ -27,11 +30,17 @@ impl Game {
     pub fn new() -> Self {
         let object = GameObject::init_floor_object();
         let object2 = GameObject::init();
+        let light = Light {
+            id: 0,
+            position: Vect3::new(0.0, 0.0, 0.0),
+            color: Color::new(1.0, 1.0, 1.0, 1.0),
+        };
         Game {
             t: 0.0,
             player: Player::init(),
             game_input: GameInput::new(),
             objects: vec![object, object2],
+            lights: vec![light],
             camera: Camera::init(),
         }
     }
@@ -124,6 +133,7 @@ impl Game {
                                     .collect();
 
                                 let vertex_buffer = VertexBuffer::new(&display, &flattened_triangles).unwrap();
+
                                 target
                                     .draw(
                                         &vertex_buffer,
@@ -152,11 +162,15 @@ impl Game {
 
         let view = view_matrix(&position, &direction, &[0.0, 0.0, 1.0]);
 
+        let light_positions: Vec<_> = self.lights.iter().map(|light| light.position.to_array()).collect();
+        let light_colors: Vec<_> = self.lights.iter().map(|light| light.color.to_array()).collect();
+
         uniform! {
             perspective: self.camera.get_perspective(),
             model: Mat4::identity().to_slices(),
             u_texture: texture,
-            u_light: light,
+            light_positions: &light_positions[..],
+            light_colors: &light_colors[..],
             view : view,
         }
     }
