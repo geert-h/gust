@@ -10,7 +10,6 @@ use gust_math::matrices::mat4::Mat4;
 use gust_math::vectors::vect3::Vect3;
 
 use crate::data::camera::Camera;
-use crate::data::color::Color;
 use crate::data::game_input::GameInput;
 use crate::data::light::Light;
 use crate::data::player::Player;
@@ -30,17 +29,13 @@ impl Game {
     pub fn new() -> Self {
         let object = GameObject::init_floor_object();
         let object2 = GameObject::init();
-        let light = Light {
-            id: 0,
-            position: Vect3::new(0.0, 0.0, 0.0),
-            color: Color::new(1.0, 1.0, 1.0, 1.0),
-        };
+
         Game {
             t: 0.0,
             player: Player::init(),
             game_input: GameInput::new(),
             objects: vec![object, object2],
-            lights: vec![light],
+            lights: vec![],
             camera: Camera::init(),
         }
     }
@@ -126,6 +121,9 @@ impl Game {
                             let mut target = display.draw();
                             target.clear_color_and_depth((0.3, 0.3, 0.4, 1.0), 1.0);
 
+                            let player_position = self.player.position.to_vec().try_into().unwrap();
+                            let player_direction = self.player.direction.to_vec().try_into().unwrap();
+
                             for (object, texture) in self.objects.iter().zip(&textures) {
                                 let flattened_triangles: Vec<Vertex> = object.mesh.triangles
                                     .iter()
@@ -139,7 +137,7 @@ impl Game {
                                         &vertex_buffer,
                                         &indices,
                                         &program,
-                                        &self.get_uniforms(self.player.position.to_vec().try_into().unwrap(), self.player.direction.to_vec().try_into().unwrap(), self.t, &texture),
+                                        &self.get_uniforms(player_position, player_direction, &texture),
                                         &params,
                                     )
                                     .unwrap();
@@ -157,25 +155,17 @@ impl Game {
             .unwrap();
     }
 
-    fn get_uniforms<'a>(&'a self, position: [f32; 3], direction: [f32; 3], _t: f32, texture: &'a Texture2d) -> impl Uniforms + 'a {
-        let light = [1.4, 0.4, -0.7f32];
-
+    fn get_uniforms<'a>(&'a self, position: [f32; 3], direction: [f32; 3], texture: &'a Texture2d) -> impl Uniforms + 'a {
         let view = view_matrix(&position, &direction, &[0.0, 0.0, 1.0]);
-
-        let light_positions: Vec<_> = self.lights.iter().map(|light| light.position.to_array()).collect();
-        let light_colors: Vec<_> = self.lights.iter().map(|light| light.color.to_array()).collect();
 
         uniform! {
             perspective: self.camera.get_perspective(),
             model: Mat4::identity().to_slices(),
             u_texture: texture,
-            light_positions: &light_positions[..],
-            light_colors: &light_colors[..],
             view : view,
         }
     }
 }
-
 
 fn view_matrix(position: &[f32; 3], direction: &[f32; 3], up: &[f32; 3]) -> [[f32; 4]; 4] {
     let f = Vect3::from_slice(direction).normalize();

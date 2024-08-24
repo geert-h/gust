@@ -12,8 +12,7 @@ in vec2 v_tex_coords;
 out vec4 color;
 
 uniform sampler2D u_texture;
-uniform vec4[] light_positions;
-uniform vec4[] light_colors;
+uniform vec3 u_light;
 
 const vec3 ambient_color = vec3(0.2, 0.0, 0.0);
 const vec3 diffuse_color = vec3(0.6, 0.0, 0.0);

@@ -12,8 +12,6 @@ uniform mat4 perspective;
 uniform mat4 view;
 uniform mat4 model;
 
-uniform vec4[] light_positions;
-uniform vec4[] light_colors;
 
 void main() {
     v_tex_coords = tex_coords;
