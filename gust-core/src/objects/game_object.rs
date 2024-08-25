@@ -26,19 +26,10 @@ impl GameObject {
         }
     }
 
-    pub fn init() -> Self {
-        let wavefront_object = WavefrontObject::parse("C:\\Users\\Geert\\source\\repos\\Personal\\gust\\resources\\assets\\objects\\BalKubus.obj");
-        let mesh = Mesh::from_wavefront(wavefront_object);
-
-        let image = image::load(std::io::Cursor::new(&include_bytes!("../../../resources/assets/BallRender.png")), image::ImageFormat::Png).unwrap().to_rgba8();
-
-        GameObject::new(0, "cube".to_string(), image, mesh, Mat4::identity())
-    }
-
     pub fn init_floor_object() -> Self {
-        let wavefront_object = WavefrontObject::parse("C:\\Users\\Geert\\source\\repos\\Personal\\gust\\resources\\assets\\objects\\Floor.obj");
+        let wavefront_object = WavefrontObject::parse("C:\\Users\\Geert\\source\\repos\\Personal\\gust\\resources\\assets\\objects\\floor.obj");
         let mesh = Mesh::from_wavefront(wavefront_object);
-        let image = image::load(std::io::Cursor::new(&include_bytes!("../../../resources/assets/BallRender.png")), image::ImageFormat::Png).unwrap().to_rgba8();
+        let image = image::load(std::io::Cursor::new(&include_bytes!("../../../resources/assets/wood.jpg")), image::ImageFormat::Jpeg).unwrap().to_rgba8();
 
         GameObject::new(0, "floor".to_string(), image, mesh, Mat4::identity())
     }
