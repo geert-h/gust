@@ -1,5 +1,5 @@
-use crate::data::vertex::Vertex;
 use crate::objects::intermediaries::wavefront_object::WavefrontObject;
+use crate::primitives::vertex::Vertex;
 
 #[derive(Debug)]
 pub struct Mesh {

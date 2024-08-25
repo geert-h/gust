@@ -3,11 +3,13 @@ use winit::keyboard::{Key, NamedKey};
 use gust_math::matrices::mat3::Mat3;
 use gust_math::vectors::vect3::Vect3;
 
-use crate::data::game_input::GameInput;
+use crate::handlers::input_handler::InputHandler;
 
+#[derive(Copy, Clone)]
 pub struct Player {
     pub position: Vect3,
     pub direction: Vect3,
+    pub up: Vect3,
     pub speed: f32,
 }
 
@@ -15,27 +17,30 @@ impl Player {
     const MAX_VERTICAL_ANGLE: f32 = 180.0f32 * std::f32::consts::PI / 180.0f32;
     const MIN_VERTICAL_ANGLE: f32 = 0.0f32 * std::f32::consts::PI / 180.0f32;
 
-    pub fn new() -> Self {
+    pub fn new(position: Vect3, direction: Vect3, up: Vect3, speed: f32) -> Self {
         Player {
-            position: Vect3::new(0.0, 0.0, 0.0),
-            direction: Vect3::new(0.0, 0.0, 0.0),
-            speed: 0.05,
+            position,
+            direction,
+            up,
+            speed,
         }
     }
 
     pub fn init() -> Self {
-        let mut player = Player::new();
-        player.position = Vect3::from_slice(&[-5.0, 0.0, 0.0]);
-        player.direction = Vect3::from_slice(&[1.0, 0.0, 0.0]);
-        player
+        let position = Vect3::from_slice(&[-5.0, 0.0, 0.0]);
+        let direction = Vect3::from_slice(&[1.0, 0.0, 0.0]);
+        let up = Vect3::from_slice(&[0.0, 0.0, 1.0]);
+        let speed = 0.1;
+
+        Player::new(position, direction, up, speed)
     }
 
-    pub fn update(&mut self, game_input: &GameInput) {
+    pub fn update(&mut self, game_input: &InputHandler) {
         self.update_direction(game_input);
         self.update_position(game_input);
     }
 
-    fn update_direction(&mut self, game_input: &GameInput) {
+    fn update_direction(&mut self, game_input: &InputHandler) {
         let delta_x = game_input.mouse_input.mouse_delta.0;
         let delta_y = game_input.mouse_input.mouse_delta.1;
 
@@ -68,7 +73,7 @@ impl Player {
         self.direction = new_direction;
     }
 
-    fn update_position(&mut self, game_input: &GameInput) {
+    fn update_position(&mut self, game_input: &InputHandler) {
         let direction = self.direction.clone();
         let mut position = self.position.clone();
 

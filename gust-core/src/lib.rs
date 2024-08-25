@@ -1,4 +1,6 @@
-pub mod data;
-pub mod parsers;
+pub mod systems;
 pub mod handlers;
 mod objects;
+pub mod primitives;
+mod components;
+mod scene;

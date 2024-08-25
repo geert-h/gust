@@ -3,17 +3,20 @@ use std::collections::HashMap;
 use winit::dpi::PhysicalPosition;
 use winit::keyboard::Key;
 
-use crate::data::keyboard_state::KeyBoardState;
-use crate::data::mouse_state::MouseState;
+use crate::handlers::input_handler::keyboard_state::KeyBoardState;
+use crate::handlers::input_handler::mouse_state::MouseState;
 
-pub struct GameInput {
+mod keyboard_state;
+mod mouse_state;
+
+pub struct InputHandler {
     pub keyboard_input: KeyBoardState,
     pub mouse_input: MouseState,
 }
 
-impl GameInput {
+impl InputHandler {
     pub fn new() -> Self {
-        GameInput {
+        InputHandler {
             keyboard_input: KeyBoardState {
                 pressed_keys: HashMap::new(),
             },

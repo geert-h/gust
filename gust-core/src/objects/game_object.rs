@@ -4,8 +4,8 @@ use image::RgbaImage;
 
 use gust_math::matrices::mat4::Mat4;
 
-use crate::data::mesh::Mesh;
 use crate::objects::intermediaries::wavefront_object::WavefrontObject;
+use crate::primitives::mesh::Mesh;
 
 pub struct GameObject {
     pub id: u32,

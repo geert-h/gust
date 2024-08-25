@@ -2,6 +2,7 @@ use std::ops::{Index, IndexMut};
 
 use crate::vectors::vect4::Vect4;
 
+#[derive(Copy)]
 pub struct Vect3 {
     pub x: f32,
     pub y: f32,
@@ -52,7 +53,7 @@ impl Vect3 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
 
-    pub fn to_array(&self) -> [f32; 3] {
+    pub fn as_slice(&self) -> [f32; 3] {
         [self.x, self.y, self.z]
     }
 

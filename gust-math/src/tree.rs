@@ -30,7 +30,7 @@ impl<T: Default> Tree<T> {
     pub fn add_data(&mut self, data: T) {
         match self {
             Tree::Node { .. } => {
-                panic!("Cannot add data to node");
+                panic!("Cannot add systems to node");
             }
             Tree::Leaf { data: existing_data } => {
                 *existing_data = data;
