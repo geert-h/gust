@@ -12,11 +12,17 @@ uniform mat4 perspective;
 uniform mat4 view;
 uniform mat4 model;
 
-
 void main() {
+    mat4 objectToWorld = model;
+    mat4 objectToScreen = perspective * view * objectToWorld;
+
+    // transform vertex position to 2D Screen Space + depth
+    gl_Position = objectToScreen * vec4(position, 1.0);
+
+    // transform vertex position and normal to an appropriate space for shading calculations
+    v_position = (objectToWorld * vec4(position, 1.0)).xyz;
+    v_normal = (transpose(inverse(objectToWorld)) * vec4(normal, 0.0)).xyz;
+
+    // pass the uv coordinate
     v_tex_coords = tex_coords;
-    mat4 modelview = view * model;
-    v_normal = transpose(inverse(mat3(modelview))) * normal;
-    gl_Position = perspective * modelview * vec4(position, 1.0);
-    v_position = gl_Position.xyz / gl_Position.w;
 }

@@ -1,11 +1,12 @@
 use glium::Display;
 use glium::glutin::surface::WindowSurface;
+use glium::uniforms::UniformBuffer;
 use winit::dpi::PhysicalPosition;
 use winit::event::Event::WindowEvent;
 use winit::event::KeyEvent;
 use winit::window::CursorGrabMode;
 
-use crate::systems::game::Game;
+use crate::systems::game::{Game, UniformBlock};
 use crate::systems::renderer::Renderer;
 
 pub struct EventHandler {
@@ -23,7 +24,7 @@ impl EventHandler {
         (EventHandler { event_loop, window }, display)
     }
 
-    pub fn run(self, game: &mut Game, renderer: Renderer) {
+    pub fn run(self, game: &mut Game, renderer: Renderer, buffer: UniformBuffer<UniformBlock>) {
         let textures: Vec<_> = game.objects.iter().map(|object| object.get_texture(&renderer.display)).collect();
 
         self.window.set_cursor_grab(CursorGrabMode::Locked)
@@ -61,7 +62,7 @@ impl EventHandler {
                         game.t += 0.02;
                         game.game_input.handle_mouse_input(mouse_position);
                         game.update();
-                        renderer.render(game, &textures);
+                        renderer.render(game, &textures, &buffer);
                     }
                     _ => (),
                 },

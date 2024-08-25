@@ -1,9 +1,10 @@
 use glium::{Display, Program, Surface, Texture2d, VertexBuffer};
 use glium::DrawParameters;
 use glium::glutin::surface::WindowSurface;
+use glium::uniforms::UniformBuffer;
 
 use crate::primitives::vertex::Vertex;
-use crate::systems::game::Game;
+use crate::systems::game::{Game, UniformBlock};
 
 pub struct Renderer {
     pub display: Display<WindowSurface>,
@@ -40,9 +41,9 @@ impl Renderer {
         }
     }
 
-    pub fn render(&self, game: &Game, textures: &[Texture2d]) {
+    pub fn render(&self, game: &Game, textures: &[Texture2d], buffer: &UniformBuffer<UniformBlock>) {
         let mut target = self.display.draw();
-        target.clear_color_and_depth((0.3, 0.3, 0.4, 1.0), 1.0);
+        target.clear_color_and_depth((0.0, 0.0, 0.0, 1.0), 1.0);
 
         let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
 
@@ -59,7 +60,7 @@ impl Renderer {
                     &vertex_buffer,
                     &indices,
                     &self.program,
-                    &game.get_uniforms(game.player.clone(), texture),
+                    &game.get_uniforms(game.player.clone(), texture, &buffer),
                     &self.params,
                 )
                 .unwrap();
