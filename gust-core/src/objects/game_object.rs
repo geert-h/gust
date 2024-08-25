@@ -12,17 +12,17 @@ pub struct GameObject {
     pub name: String,
     pub mesh: Mesh,
     pub image: RgbaImage,
-    pub transformation: Mat4,
+    pub object_to_parent: Mat4,
 }
 
 impl GameObject {
-    pub fn new(id: u32, name: String, image: RgbaImage, mesh: Mesh, transformation: Mat4) -> Self {
+    pub fn new(id: u32, name: String, image: RgbaImage, mesh: Mesh, object_to_parent: Mat4) -> Self {
         GameObject {
             id,
             name,
             mesh,
             image,
-            transformation,
+            object_to_parent,
         }
     }
 
