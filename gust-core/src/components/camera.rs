@@ -39,9 +39,9 @@ impl Camera {
     pub fn init() -> Camera {
         Camera {
             id: 0,
-            position: Vect3::from_slice(&[0.0, 0.0, 0.0]),
-            direction: Vect3::from_slice(&[0.0, 0.0, 1.0]),
-            up: Vect3::from_slice(&[0.0, 0.0, 1.0]),
+            position: Vect3::new(0.0, 0.0, 0.0),
+            direction: Vect3::new(0.0, 1.0, 0.0),
+            up: Vect3::new(0.0, 0.0, 1.0),
             fov: PI / 3.0,
             z_far: 1024.0,
             z_near: 0.1,
