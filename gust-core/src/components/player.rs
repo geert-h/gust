@@ -27,20 +27,20 @@ impl Player {
     }
 
     pub fn init() -> Self {
-        let position = Vect3::new(-5.0, 0.0, 0.0);
+        let position = Vect3::new(-5.0, 0.0, 1.0);
         let direction = Vect3::new(1.0, 0.0, 0.0);
         let up = Vect3::new(0.0, 0.0, 1.0);
-        let speed = 0.1;
+        let speed = 10.0;
 
         Player::new(position, direction, up, speed)
     }
 
-    pub fn update(&mut self, game_input: &InputHandler) {
-        self.update_direction(game_input);
-        self.update_position(game_input);
+    pub fn update(&mut self, dt: &f32, game_input: &InputHandler) {
+        self.update_direction(dt, &game_input);
+        self.update_position(dt, &game_input);
     }
 
-    fn update_direction(&mut self, game_input: &InputHandler) {
+    fn update_direction(&mut self, dt: &f32, game_input: &InputHandler) {
         let delta_x = game_input.mouse_input.mouse_delta.0;
         let delta_y = game_input.mouse_input.mouse_delta.1;
 
@@ -69,10 +69,10 @@ impl Player {
 
         new_direction.normalize();
 
-        self.direction = new_direction;
+        self.direction = dt.clone() * new_direction;
     }
 
-    fn update_position(&mut self, game_input: &InputHandler) {
+    fn update_position(&mut self, dt: &f32, game_input: &InputHandler) {
         let look_direction = self.direction.clone();
         let up = self.up.clone();
 
@@ -106,6 +106,6 @@ impl Player {
         }
 
         cumulative_vector.normalize();
-        self.position = self.position + cumulative_vector * self.speed;
+        self.position = self.position + cumulative_vector * self.speed * dt.clone();
     }
 }

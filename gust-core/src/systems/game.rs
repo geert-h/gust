@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use glium::{implement_uniform_block, Texture2d, uniform};
 use glium::uniforms::{UniformBuffer, Uniforms};
 
@@ -15,29 +17,36 @@ use crate::systems::renderer::Renderer;
 
 pub struct Game {
     pub t: f32,
+    pub dt: f32,
     pub objects: Vec<GameObject>,
     pub player: Player,
     pub game_input: InputHandler,
     pub camera: Camera,
+    pub last_frame_time: Instant,
 }
 
 impl Game {
     pub fn new() -> Self {
+        let mesh = Mesh::from_wavefront(WavefrontObject::parse("C:\\Users\\Geert\\source\\repos\\Personal\\gust\\resources\\assets\\objects\\monkey.obj"));
+
         let object = GameObject {
             id: 0,
             name: "Monkey".to_string(),
-            mesh: Mesh::from_wavefront(WavefrontObject::parse("C:\\Users\\Geert\\source\\repos\\Personal\\gust\\resources\\assets\\objects\\monkey.obj")),
+            mesh: mesh,
             image: image::load(std::io::Cursor::new(&include_bytes!("../../../resources/assets/green.png")), image::ImageFormat::Png).unwrap().to_rgba8(),
-            transformation: Mat4::identity(),
+            object_to_parent: Mat4::identity().translate(Vect3::new(0.0, 0.0, 1.0)),
         };
+
         let floor_object = GameObject::init_floor_object();
 
         Game {
             t: 0.0,
+            dt: 0.0,
             player: Player::init(),
             game_input: InputHandler::new(),
             objects: vec![object, floor_object],
             camera: Camera::init(),
+            last_frame_time: Instant::now(),
         }
     }
 
@@ -45,26 +54,22 @@ impl Game {
         if self.game_input.keyboard_input.is_character_pressed('r') {
             self.player = Player::init();
         }
-        self.player.update(&self.game_input);
+        self.player.update(&self.dt, &self.game_input);
     }
 
     pub fn run(&mut self) {
         let (event_handler, display) = EventHandler::new();
 
         let light_positions: [[f32; 3]; 5] = [
-            [3.0, 0.0, 0.0],
-            [0.0, 3.0, 0.0],
-            [0.0, 0.0, 3.0],
-            [-3.0, 0.0, 0.0],
-            [0.0, -3.0, 0.0],
+            [0.0, 0.0, 5.0],
+            [10.0, 10.0, 5.0],
+            [-10.0, 10.0, 5.0],
+            [10.0, -10.0, 5.0],
+            [-10.0, -10.0, 5.0],
         ];
 
         let light_colors: [[f32; 3]; 5] = [
-            [1.0, 1.0, 1.0],
-            [1.0, 1.0, 1.0],
-            [1.0, 1.0, 1.0],
-            [1.0, 1.0, 1.0],
-            [1.0, 1.0, 1.0],
+            [1.0, 1.0, 1.0]; 5
         ];
 
         let buffer = UniformBuffer::new(&display, UniformBlock {
@@ -78,15 +83,18 @@ impl Game {
         event_handler.run(self, renderer, buffer);
     }
 
-    pub fn get_uniforms<'a>(&'a self, player: Player, texture: &'a Texture2d, buffer: &'a UniformBuffer<UniformBlock>) -> impl Uniforms + 'a {
+    pub fn get_uniforms<'a>(&'a self, player: Player, object: &GameObject, texture: &'a Texture2d, buffer: &'a UniformBuffer<UniformBlock>) -> impl Uniforms + 'a {
         let view = self.view_matrix(player.position, player.direction, player.up);
+
+        let lights_used = 1;
 
         uniform! {
             perspective: self.camera.get_perspective(),
-            model: Mat4::identity().to_slices(),
+            model: object.get_model_matrix(),
             u_texture: texture,
             view : view,
             lightsBlock: &*buffer,
+            u_light_count : lights_used,
         }
     }
 
