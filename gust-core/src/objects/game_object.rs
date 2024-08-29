@@ -38,4 +38,8 @@ impl GameObject {
         let image = glium::texture::RawImage2d::from_raw_rgba_reversed(&self.image.clone().into_raw(), self.image.dimensions());
         glium::texture::Texture2d::new(display, image).unwrap()
     }
+
+    pub fn get_model_matrix(&self) -> [[f32; 4]; 4] {
+        self.object_to_parent.to_slices()
+    }
 }

@@ -1,3 +1,6 @@
+use std::time::Instant;
+
+use glium::debug::TimestampQuery;
 use glium::Display;
 use glium::glutin::surface::WindowSurface;
 use glium::uniforms::UniformBuffer;
@@ -20,6 +23,8 @@ impl EventHandler {
         let (window, display) = glium::backend::glutin::SimpleWindowBuilder::new()
             .with_title("Gust")
             .build(&event_loop);
+
+        let timestamp_query = TimestampQuery::new(&display).unwrap();
 
         (EventHandler { event_loop, window }, display)
     }
@@ -59,7 +64,13 @@ impl EventHandler {
                         renderer.display.resize(window_size.into());
                     }
                     winit::event::WindowEvent::RedrawRequested => {
-                        game.t += 0.02;
+                        let now = Instant::now();
+                        let elapsed = now.duration_since(game.last_frame_time);
+
+                        game.last_frame_time = now;
+                        game.dt = elapsed.as_secs_f32();
+                        game.t = game.t + game.dt;
+
                         game.game_input.handle_mouse_input(mouse_position);
                         game.update();
                         renderer.render(game, &textures, &buffer);

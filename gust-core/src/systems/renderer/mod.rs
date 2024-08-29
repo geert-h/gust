@@ -60,7 +60,7 @@ impl Renderer {
                     &vertex_buffer,
                     &indices,
                     &self.program,
-                    &game.get_uniforms(game.player.clone(), texture, &buffer),
+                    &game.get_uniforms(game.player.clone(), object, texture, &buffer),
                     &self.params,
                 )
                 .unwrap();

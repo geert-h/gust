@@ -94,7 +94,7 @@ impl Mat4 {
         mat
     }
 
-    pub fn scale(scale: Vect3) -> Self {
+    pub fn scale(&self, scale: Vect3) -> Self {
         let mut mat = Mat4::identity();
         mat.data[0][0] = scale[0];
         mat.data[1][1] = scale[1];
@@ -102,15 +102,7 @@ impl Mat4 {
         mat
     }
 
-    pub fn translation(translation: Vect3) -> Self {
-        let mut mat = Mat4::identity();
-        mat.data[0][3] = translation[0];
-        mat.data[1][3] = translation[1];
-        mat.data[2][3] = translation[2];
-        mat
-    }
-
-    pub fn rotation(axis: Vect3, angle: f32) -> Self {
+    pub fn rotate(&self, angle: f32, axis: Vect3) -> Self {
         let mut mat = Mat4::identity();
         let c = angle.cos();
         let s = angle.sin();
@@ -141,6 +133,14 @@ impl Mat4 {
             }
         }
         mat
+    }
+
+    pub fn translate(&self, translation: Vect3) -> Self {
+        let mut mat = Mat4::identity();
+        mat.data[3][0] = translation[0];
+        mat.data[3][1] = translation[1];
+        mat.data[3][2] = translation[2];
+        self.dot(&mat)
     }
 }
 
