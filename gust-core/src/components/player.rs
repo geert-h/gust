@@ -2,7 +2,7 @@ use winit::keyboard::{Key, NamedKey};
 
 use gust_math::matrices::mat3::Mat3;
 use gust_math::vectors::vect3::Vect3;
-
+use crate::components::viewer::Viewer;
 use crate::handlers::input_handler::InputHandler;
 
 #[derive(Copy, Clone)]
@@ -107,5 +107,35 @@ impl Player {
 
         cumulative_vector.normalize();
         self.position = self.position + cumulative_vector * self.speed * dt.clone();
+    }
+}
+
+impl Viewer for Player {
+    fn position(&self) -> Vect3 {
+        self.position
+    }
+
+    fn direction(&self) -> Vect3 {
+        self.direction
+    }
+
+    fn up(&self) -> Vect3 {
+        self.up
+    }
+
+    fn fov(&self) -> f32 {
+        std::f32::consts::PI / 3.0
+    }
+
+    fn z_far(&self) -> f32 {
+        1024.0
+    }
+
+    fn z_near(&self) -> f32 {
+        0.1
+    }
+
+    fn aspect_ratio(&self) -> f32 {
+        480.0 / 800.0
     }
 }

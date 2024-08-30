@@ -1,6 +1,7 @@
 use std::f32::consts::PI;
 
 use gust_math::vectors::vect3::Vect3;
+use crate::components::viewer::Viewer;
 
 pub struct Camera {
     pub id: u32,
@@ -48,14 +49,34 @@ impl Camera {
             aspect_ratio: 480.0 / 800.0,
         }
     }
+}
 
-    pub fn get_perspective(&self) -> [[f32; 4]; 4] {
-        let f = 1.0 / (self.fov / 2.0).tan();
-        [
-            [f * self.aspect_ratio, 0.0, 0.0, 0.0],
-            [0.0, f, 0.0, 0.0],
-            [0.0, 0.0, (self.z_far + self.z_near) / (self.z_far - self.z_near), 1.0],
-            [0.0, 0.0, -(2.0 * self.z_far * self.z_near) / (self.z_far - self.z_near), 0.0],
-        ]
+impl Viewer for Camera {
+    fn position(&self) -> Vect3 {
+        self.position.clone()
+    }
+
+    fn direction(&self) -> Vect3 {
+        self.direction.clone()
+    }
+
+    fn up(&self) -> Vect3 {
+        self.up.clone()
+    }
+
+    fn fov(&self) -> f32 {
+        self.fov
+    }
+
+    fn z_far(&self) -> f32 {
+        self.z_far
+    }
+
+    fn z_near(&self) -> f32 {
+        self.z_near
+    }
+
+    fn aspect_ratio(&self) -> f32 {
+        self.aspect_ratio
     }
 }

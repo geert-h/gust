@@ -8,6 +8,7 @@ use gust_math::vectors::vect3::Vect3;
 
 use crate::components::camera::Camera;
 use crate::components::player::Player;
+use crate::components::viewer::Viewer;
 use crate::handlers::event_handler::EventHandler;
 use crate::handlers::input_handler::InputHandler;
 use crate::objects::game_object::GameObject;
@@ -84,39 +85,18 @@ impl Game {
     }
 
     pub fn get_uniforms<'a>(&'a self, player: Player, object: &GameObject, texture: &'a Texture2d, buffer: &'a UniformBuffer<UniformBlock>) -> impl Uniforms + 'a {
-        let view = self.view_matrix(player.position, player.direction, player.up);
+        let view = player.view_matrix();
 
         let lights_used = 1;
 
         uniform! {
-            perspective: self.camera.get_perspective(),
+            perspective: player.get_perspective(),
             model: object.get_model_matrix(),
             u_texture: texture,
             view : view,
             lightsBlock: &*buffer,
             u_light_count : lights_used,
         }
-    }
-
-    fn view_matrix(&self, position: Vect3, direction: Vect3, up: Vect3) -> [[f32; 4]; 4] {
-        let f = direction.clone().normalize();
-        let s = up.cross(&f).normalize();
-        let u = f.cross(&s).normalize();
-
-        let position = Vect3::new(position.x, position.y, position.z);
-
-        let p = [
-            -position.dot(&s),
-            -position.dot(&u),
-            -position.dot(&f),
-        ];
-
-        [
-            [s.x, u.x, f.x, 0.0],
-            [s.y, u.y, f.y, 0.0],
-            [s.z, u.z, f.z, 0.0],
-            [p[0], p[1], p[2], 1.0],
-        ]
     }
 }
 
