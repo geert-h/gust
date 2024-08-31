@@ -1,3 +1,4 @@
+use std::path::Path;
 use std::time::Instant;
 
 use glium::{implement_uniform_block, Texture2d, uniform};
@@ -28,7 +29,7 @@ pub struct Game {
 
 impl Game {
     pub fn new() -> Self {
-        let mesh = Mesh::from_wavefront(WavefrontObject::parse("C:\\Users\\Geert\\source\\repos\\Personal\\gust\\resources\\assets\\objects\\monkey.obj"));
+        let mesh = Mesh::from_wavefront(WavefrontObject::parse(Path::new("./resources/assets/objects/monkey.obj")));
 
         let object = GameObject {
             id: 0,

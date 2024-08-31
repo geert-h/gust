@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use glium::Display;
 use glium::glutin::surface::WindowSurface;
 use image::RgbaImage;
@@ -27,7 +29,7 @@ impl GameObject {
     }
 
     pub fn init_floor_object() -> Self {
-        let wavefront_object = WavefrontObject::parse("C:\\Users\\Geert\\source\\repos\\Personal\\gust\\resources\\assets\\objects\\floor.obj");
+        let wavefront_object = WavefrontObject::parse(Path::new("./resources/assets/objects/floor.obj"));
         let mesh = Mesh::from_wavefront(wavefront_object);
         let image = image::load(std::io::Cursor::new(&include_bytes!("../../../resources/assets/wood.jpg")), image::ImageFormat::Jpeg).unwrap().to_rgba8();
 

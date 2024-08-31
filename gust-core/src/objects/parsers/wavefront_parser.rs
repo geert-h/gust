@@ -1,7 +1,9 @@
+use std::path::Path;
+
 use crate::objects::intermediaries::wavefront_object::WavefrontObject;
 
 impl WavefrontObject {
-    pub fn parse(file_path: &str) -> WavefrontObject {
+    pub fn parse(file_path: &Path) -> WavefrontObject {
         let file = std::fs::read_to_string(file_path).expect("Failed to read file");
 
         let mut vertices = Vec::new();
