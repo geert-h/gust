@@ -1,4 +1,5 @@
 use std::path::Path;
+use std::rc::Rc;
 use std::time::Instant;
 
 use glium::{implement_uniform_block, Texture2d, uniform};
@@ -29,27 +30,43 @@ pub struct Game {
 
 impl Game {
     pub fn new() -> Self {
-        let mesh = Mesh::from_wavefront(WavefrontObject::parse(Path::new("./resources/assets/objects/monkey.obj")));
-
-        let object = GameObject {
-            id: 0,
-            name: "Monkey".to_string(),
-            mesh: mesh,
-            image: image::load(std::io::Cursor::new(&include_bytes!("../../../resources/assets/green.png")), image::ImageFormat::Png).unwrap().to_rgba8(),
-            object_to_parent: Mat4::identity().translate(Vect3::new(0.0, 0.0, 1.0)),
-        };
-
-        let floor_object = GameObject::init_floor_object();
+        let objects = Self::construct_objects();
 
         Game {
             t: 0.0,
             dt: 0.0,
             player: Player::init(),
             game_input: InputHandler::new(),
-            objects: vec![object, floor_object],
+            objects,
             camera: Camera::init(),
             last_frame_time: Instant::now(),
         }
+    }
+
+    fn construct_objects() -> Vec<GameObject> {
+        let mesh = Mesh::from_wavefront(WavefrontObject::parse(Path::new("./resources/assets/objects/monkey.obj")));
+
+        let image = image::load(std::io::Cursor::new(&include_bytes!("../../../resources/assets/green.png")), image::ImageFormat::Png).unwrap().to_rgba8();
+
+        let object = GameObject {
+            id: 0,
+            name: "Monkey".to_string(),
+            mesh: Rc::new(mesh),
+            image: Rc::new(image),
+            object_to_parent: Mat4::identity().translate(Vect3::new(0.0, 0.0, 1.0)),
+        };
+
+        let wavefront_object = WavefrontObject::parse(Path::new("./resources/assets/objects/floor.obj"));
+        let mesh = Mesh::from_wavefront(wavefront_object);
+        let image = image::load(std::io::Cursor::new(&include_bytes!("../../../resources/assets/wood.jpg")), image::ImageFormat::Jpeg).unwrap().to_rgba8();
+
+        let floor_object = GameObject::new(0, "floor".to_string(), Rc::new(image), Rc::new(mesh), Mat4::identity());
+
+        vec![object, floor_object]
+    }
+
+    pub fn load_objects(&mut self) {
+        self.objects = Self::construct_objects();
     }
 
     pub fn update(&mut self) {
@@ -85,7 +102,7 @@ impl Game {
         event_handler.run(self, renderer, buffer);
     }
 
-    pub fn get_uniforms<'a>(&'a self, player: Player, object: &GameObject, texture: &'a Texture2d, buffer: &'a UniformBuffer<UniformBlock>) -> impl Uniforms + 'a {
+    pub fn get_uniforms<'b>(&'b self, player: Player, object: &GameObject, texture: &'b Texture2d, buffer: &'b UniformBuffer<UniformBlock>) -> impl Uniforms + 'b {
         let view = player.view_matrix();
 
         let lights_used = 1;
