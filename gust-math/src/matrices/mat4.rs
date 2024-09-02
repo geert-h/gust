@@ -122,6 +122,22 @@ impl Mat4 {
         mat
     }
 
+    pub fn rotate_with_dir_and_up(&self, direction: Vect3, up: Vect3) -> Self {
+        let mut mat = Mat4::identity();
+        let right = direction.cross(&up).normalize();
+        let new_up = right.cross(&direction).normalize();
+        mat.data[0][0] = right.x;
+        mat.data[0][1] = right.y;
+        mat.data[0][2] = right.z;
+        mat.data[1][0] = new_up.x;
+        mat.data[1][1] = new_up.y;
+        mat.data[1][2] = new_up.z;
+        mat.data[2][0] = direction.x;
+        mat.data[2][1] = direction.y;
+        mat.data[2][2] = direction.z;
+        mat
+    }
+
     pub fn dot(&self, other: &Mat4) -> Self {
         let mut mat = Mat4::new();
         for i in 0..4 {

@@ -24,8 +24,6 @@ impl EventHandler {
             .with_title("Gust")
             .build(&event_loop);
 
-        let timestamp_query = TimestampQuery::new(&display).unwrap();
-
         (EventHandler { event_loop, window }, display)
     }
 

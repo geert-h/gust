@@ -1,2 +1,2 @@
-mod scene_object;
-mod scene_tree;
+pub mod scene_object;
+pub mod scene_tree;

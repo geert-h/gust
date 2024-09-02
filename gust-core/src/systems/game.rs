@@ -7,8 +7,7 @@ use glium::uniforms::{UniformBuffer, Uniforms};
 
 use gust_math::matrices::mat4::Mat4;
 use gust_math::vectors::vect3::Vect3;
-
-use crate::components::camera::Camera;
+use crate::components::floor_object::FloorObject;
 use crate::components::player::Player;
 use crate::components::viewer::Viewer;
 use crate::handlers::event_handler::EventHandler;
@@ -16,6 +15,7 @@ use crate::handlers::input_handler::InputHandler;
 use crate::objects::game_object::GameObject;
 use crate::objects::intermediaries::wavefront_object::WavefrontObject;
 use crate::primitives::mesh::Mesh;
+use crate::scene::scene_tree::{GameTreeObject, Node, SceneTree};
 use crate::systems::renderer::Renderer;
 
 pub struct Game {
@@ -24,7 +24,6 @@ pub struct Game {
     pub objects: Vec<GameObject>,
     pub player: Player,
     pub game_input: InputHandler,
-    pub camera: Camera,
     pub last_frame_time: Instant,
 }
 
@@ -38,7 +37,6 @@ impl Game {
             player: Player::init(),
             game_input: InputHandler::new(),
             objects,
-            camera: Camera::init(),
             last_frame_time: Instant::now(),
         }
     }
@@ -65,6 +63,26 @@ impl Game {
         vec![object, floor_object]
     }
 
+    fn build_scene_tree(&self) -> SceneTree<dyn GameTreeObject> {
+        let scene_tree = SceneTree::new();
+
+        let player = Node::new(self.player.clone());
+
+        let wavefront_object = WavefrontObject::parse(Path::new("./resources/assets/objects/floor.obj"));
+        let mesh = Mesh::from_wavefront(wavefront_object);
+        let image = image::load(std::io::Cursor::new(&include_bytes!("../../../resources/assets/wood.jpg")), image::ImageFormat::Jpeg).unwrap().to_rgba8();
+
+        let floor_object = FloorObject::new(Vect3::zeros(), Vect3::new(0.0, 0.0, 1.0), Vect3::new(0.0, 1.0, 0.0), Rc::new(mesh), Rc::new(image));
+
+        let floor = Node::new(floor_object);
+
+        scene_tree.root.
+
+            scene_tree.set_viewer(player);
+
+        scene_tree
+    }
+
     pub fn load_objects(&mut self) {
         self.objects = Self::construct_objects();
     }
@@ -73,7 +91,9 @@ impl Game {
         if self.game_input.keyboard_input.is_character_pressed('r') {
             self.player = Player::init();
         }
-        self.player.update(&self.dt, &self.game_input);
+        let mut player = self.player.clone();
+        player.update(self);
+        self.player = player;
     }
 
     pub fn run(&mut self) {

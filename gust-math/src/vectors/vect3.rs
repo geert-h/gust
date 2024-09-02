@@ -18,6 +18,14 @@ impl Vect3 {
         }
     }
 
+    pub fn zeros() -> Vect3 {
+        Vect3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        }
+    }
+
     pub fn from_slice(data: &[f32]) -> Vect3 {
         Vect3 {
             x: data[0],
