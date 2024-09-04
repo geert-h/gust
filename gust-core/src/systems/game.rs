@@ -63,10 +63,10 @@ impl Game {
         vec![object, floor_object]
     }
 
-    fn build_scene_tree(&self) -> SceneTree<dyn GameTreeObject> {
-        let scene_tree = SceneTree::new();
+    fn build_scene_tree(&self) -> SceneTree {
+        let mut scene_tree = SceneTree::new();
 
-        let player = Node::new(self.player.clone());
+        let player = Node::new(Box::new(self.player.clone()));
 
         let wavefront_object = WavefrontObject::parse(Path::new("./resources/assets/objects/floor.obj"));
         let mesh = Mesh::from_wavefront(wavefront_object);
@@ -74,11 +74,12 @@ impl Game {
 
         let floor_object = FloorObject::new(Vect3::zeros(), Vect3::new(0.0, 0.0, 1.0), Vect3::new(0.0, 1.0, 0.0), Rc::new(mesh), Rc::new(image));
 
-        let floor = Node::new(floor_object);
+        let floor = Node::new(Box::new(floor_object));
 
-        scene_tree.root.
+        scene_tree.root.borrow_mut().add_child(&player.clone());
+        scene_tree.root.borrow_mut().add_child(&floor.clone());
 
-            scene_tree.set_viewer(player);
+        scene_tree.set_viewer(player);
 
         scene_tree
     }

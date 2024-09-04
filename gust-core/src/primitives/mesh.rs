@@ -7,6 +7,12 @@ pub struct Mesh {
 }
 
 impl Mesh {
+    pub fn new() -> Self {
+        Mesh {
+            triangles: Vec::new(),
+        }
+    }
+
     pub fn from_wavefront(wavefront_object: WavefrontObject) -> Self {
         let mut polygons = Vec::new();
         for face in wavefront_object.faces {
