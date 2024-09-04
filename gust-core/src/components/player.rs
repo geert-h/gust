@@ -1,16 +1,9 @@
-use std::rc::Rc;
-use glium::Display;
-use glium::glutin::surface::WindowSurface;
 use winit::keyboard::{Key, NamedKey};
 
 use gust_math::matrices::mat3::Mat3;
-use gust_math::matrices::mat4::Mat4;
 use gust_math::vectors::vect3::Vect3;
 use crate::components::viewer::Viewer;
 use crate::handlers::input_handler::InputHandler;
-use crate::primitives::mesh::Mesh;
-use crate::scene::scene_tree::GameTreeObject;
-use crate::systems::game::Game;
 
 #[derive(Copy, Clone)]
 pub struct Player {
@@ -40,6 +33,11 @@ impl Player {
         let speed = 10.0;
 
         Player::new(position, direction, up, speed)
+    }
+
+    pub fn update(&mut self, dt: &f32, game_input: &InputHandler) {
+        self.update_direction(dt, game_input);
+        self.update_position(dt, game_input);
     }
 
     fn update_direction(&mut self, dt: &f32, game_input: &InputHandler) {
@@ -109,27 +107,6 @@ impl Player {
 
         cumulative_vector.normalize();
         self.position = self.position + cumulative_vector * self.speed * dt.clone();
-    }
-}
-
-impl GameTreeObject for Player {
-    fn update(&mut self, game: &mut Game) {
-        self.update_direction(&game.dt, &game.game_input);
-        self.update_position(&game.dt, &game.game_input);
-    }
-
-    fn render(&self) {}
-
-    fn get_model_matrix(&self) -> Mat4 {
-        Mat4::identity().translate(self.position)
-    }
-
-    fn get_mesh(&self) -> Rc<Mesh> {
-        unimplemented!()
-    }
-
-    fn get_texture(&self, display: Display<WindowSurface>) -> glium::texture::Texture2d {
-        unimplemented!()
     }
 }
 

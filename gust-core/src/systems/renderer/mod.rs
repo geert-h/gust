@@ -2,9 +2,9 @@ use glium::{Display, Program, Surface, Texture2d, VertexBuffer};
 use glium::DrawParameters;
 use glium::glutin::surface::WindowSurface;
 use glium::uniforms::UniformBuffer;
-
+use crate::primitives::lights_block::LightsBlock;
 use crate::primitives::vertex::Vertex;
-use crate::systems::game::{Game, UniformBlock};
+use crate::systems::game::{Game};
 
 pub struct Renderer {
     pub display: Display<WindowSurface>,
@@ -41,7 +41,7 @@ impl Renderer {
         }
     }
 
-    pub fn render(&self, game: &Game, textures: &[Texture2d], buffer: &UniformBuffer<UniformBlock>) {
+    pub fn render(&self, game: &Game, textures: &[Texture2d], buffer: &UniformBuffer<LightsBlock>) {
         let mut target = self.display.draw();
         target.clear_color_and_depth((0.0, 0.0, 0.0, 1.0), 1.0);
 

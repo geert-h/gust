@@ -1,6 +1,7 @@
 use crate::vectors::vect3::Vect3;
 use crate::vectors::vect4::Vect4;
 
+#[derive(Debug, Clone, Copy)]
 pub struct Mat4 {
     data: [[f32; 4]; 4],
 }

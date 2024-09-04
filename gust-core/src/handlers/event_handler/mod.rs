@@ -1,15 +1,14 @@
 use std::time::Instant;
 
-use glium::debug::TimestampQuery;
-use glium::Display;
+use glium::{Display, Texture2d};
 use glium::glutin::surface::WindowSurface;
 use glium::uniforms::UniformBuffer;
 use winit::dpi::PhysicalPosition;
 use winit::event::Event::WindowEvent;
 use winit::event::KeyEvent;
 use winit::window::CursorGrabMode;
-
-use crate::systems::game::{Game, UniformBlock};
+use crate::primitives::lights_block::LightsBlock;
+use crate::systems::game::{Game};
 use crate::systems::renderer::Renderer;
 
 pub struct EventHandler {
@@ -27,7 +26,7 @@ impl EventHandler {
         (EventHandler { event_loop, window }, display)
     }
 
-    pub fn run(self, game: &mut Game, renderer: Renderer, buffer: UniformBuffer<UniformBlock>) {
+    pub fn run(self, game: &mut Game, renderer: Renderer, buffer: UniformBuffer<LightsBlock>) {
         let textures: Vec<_> = game.objects.iter().map(|object| object.get_texture(&renderer.display)).collect();
 
         self.window.set_cursor_grab(CursorGrabMode::Locked)
@@ -62,16 +61,7 @@ impl EventHandler {
                         renderer.display.resize(window_size.into());
                     }
                     winit::event::WindowEvent::RedrawRequested => {
-                        let now = Instant::now();
-                        let elapsed = now.duration_since(game.last_frame_time);
-
-                        game.last_frame_time = now;
-                        game.dt = elapsed.as_secs_f32();
-                        game.t = game.t + game.dt;
-
-                        game.game_input.handle_mouse_input(mouse_position);
-                        game.update();
-                        renderer.render(game, &textures, &buffer);
+                        EventHandler::handle_redraw_request(mouse_position, game, &textures, &renderer, &buffer);
                     }
                     _ => (),
                 },
@@ -81,5 +71,18 @@ impl EventHandler {
                 _ => (),
             };
         }).unwrap();
+    }
+
+    fn handle_redraw_request(mouse_position: PhysicalPosition<f64>, game: &mut Game, textures: &Vec<Texture2d>, renderer: &Renderer, buffer: &UniformBuffer<LightsBlock>) {
+        let now = Instant::now();
+        let elapsed = now.duration_since(game.last_frame_time);
+
+        game.last_frame_time = now;
+        game.dt = elapsed.as_secs_f32();
+        game.t = game.t + game.dt;
+
+        game.game_input.handle_mouse_input(mouse_position);
+        game.update();
+        renderer.render(game, textures, buffer);
     }
 }

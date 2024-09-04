@@ -2,20 +2,19 @@ use std::path::Path;
 use std::rc::Rc;
 use std::time::Instant;
 
-use glium::{implement_uniform_block, Texture2d, uniform};
+use glium::{Texture2d, uniform};
 use glium::uniforms::{UniformBuffer, Uniforms};
 
 use gust_math::matrices::mat4::Mat4;
 use gust_math::vectors::vect3::Vect3;
-use crate::components::floor_object::FloorObject;
 use crate::components::player::Player;
 use crate::components::viewer::Viewer;
 use crate::handlers::event_handler::EventHandler;
 use crate::handlers::input_handler::InputHandler;
 use crate::objects::game_object::GameObject;
 use crate::objects::intermediaries::wavefront_object::WavefrontObject;
+use crate::primitives::lights_block::LightsBlock;
 use crate::primitives::mesh::Mesh;
-use crate::scene::scene_tree::{GameTreeObject, Node, SceneTree};
 use crate::systems::renderer::Renderer;
 
 pub struct Game {
@@ -63,27 +62,6 @@ impl Game {
         vec![object, floor_object]
     }
 
-    fn build_scene_tree(&self) -> SceneTree {
-        let mut scene_tree = SceneTree::new();
-
-        let player = Node::new(Box::new(self.player.clone()));
-
-        let wavefront_object = WavefrontObject::parse(Path::new("./resources/assets/objects/floor.obj"));
-        let mesh = Mesh::from_wavefront(wavefront_object);
-        let image = image::load(std::io::Cursor::new(&include_bytes!("../../../resources/assets/wood.jpg")), image::ImageFormat::Jpeg).unwrap().to_rgba8();
-
-        let floor_object = FloorObject::new(Vect3::zeros(), Vect3::new(0.0, 0.0, 1.0), Vect3::new(0.0, 1.0, 0.0), Rc::new(mesh), Rc::new(image));
-
-        let floor = Node::new(Box::new(floor_object));
-
-        scene_tree.root.borrow_mut().add_child(&player.clone());
-        scene_tree.root.borrow_mut().add_child(&floor.clone());
-
-        scene_tree.set_viewer(player);
-
-        scene_tree
-    }
-
     pub fn load_objects(&mut self) {
         self.objects = Self::construct_objects();
     }
@@ -93,7 +71,7 @@ impl Game {
             self.player = Player::init();
         }
         let mut player = self.player.clone();
-        player.update(self);
+        player.update(&self.dt, &self.game_input);
         self.player = player;
     }
 
@@ -112,7 +90,7 @@ impl Game {
             [1.0, 1.0, 1.0]; 5
         ];
 
-        let buffer = UniformBuffer::new(&display, UniformBlock {
+        let buffer = UniformBuffer::new(&display, LightsBlock {
             light_positions,
             _padding: [0.0; 5],
             light_colors,
@@ -123,26 +101,19 @@ impl Game {
         event_handler.run(self, renderer, buffer);
     }
 
-    pub fn get_uniforms<'b>(&'b self, player: Player, object: &GameObject, texture: &'b Texture2d, buffer: &'b UniformBuffer<UniformBlock>) -> impl Uniforms + 'b {
+    pub fn get_uniforms<'b>(&'b self, player: Player, object: &GameObject, texture: &'b Texture2d, buffer: &'b UniformBuffer<LightsBlock>) -> impl Uniforms + 'b {
         let view = player.view_matrix();
 
         let lights_used = 1;
 
         uniform! {
             perspective: player.get_perspective(),
+            view : view,
             model: object.get_model_matrix(),
             u_texture: texture,
-            view : view,
             lightsBlock: &*buffer,
             u_light_count : lights_used,
         }
     }
 }
 
-#[derive(Copy, Clone)]
-pub struct UniformBlock {
-    light_positions: [[f32; 3]; 5],
-    _padding: [f32; 5],
-    light_colors: [[f32; 3]; 5],
-}
-implement_uniform_block!(UniformBlock, light_positions, light_colors);

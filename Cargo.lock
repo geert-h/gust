@@ -699,6 +699,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "gust-hierarchy"
+version = "0.1.0"
+dependencies = [
+ "gust-core",
+ "gust-math",
+]
+
+[[package]]
 name = "gust-math"
 version = "0.1.0"
 dependencies = [
