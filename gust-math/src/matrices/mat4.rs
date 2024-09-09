@@ -282,3 +282,16 @@ impl std::ops::IndexMut<usize> for Mat4 {
         &mut self.data[index]
     }
 }
+
+impl PartialEq for Mat4 {
+    fn eq(&self, other: &Self) -> bool {
+        for i in 0..4 {
+            for j in 0..4 {
+                if self.data[i][j] != other.data[i][j] {
+                    return false;
+                }
+            }
+        }
+        true
+    }
+}

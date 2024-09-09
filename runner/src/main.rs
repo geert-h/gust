@@ -1,5 +1,4 @@
-use gust_core::systems::game::Game;
-
 fn main() {
-    Game::new().run();
+    // Game::new().run();
+    // test_gust_hierarchy();
 }

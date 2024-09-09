@@ -1,3 +1,3 @@
 pub mod node;
-mod node_trait;
+pub mod scene_tree;
 pub mod world;

@@ -185,3 +185,13 @@ impl PartialEq for Vect3 {
         self.x == other.x && self.y == other.y && self.z == other.z
     }
 }
+
+impl From<[f32; 3]> for Vect3 {
+    fn from(data: [f32; 3]) -> Vect3 {
+        Vect3 {
+            x: data[0],
+            y: data[1],
+            z: data[2],
+        }
+    }
+}

@@ -1,57 +1,63 @@
-﻿use std::cell::RefCell;
-use std::rc::{Rc, Weak};
-use gust_core::systems::game::Game;
-use gust_math::matrices::mat4::Mat4;
-use crate::node_trait::NodeTrait;
+﻿use std::collections::VecDeque;
 
+use gust_ecs::component::Component::TransformComponent;
+use gust_ecs::component::ComponentType::TransformType;
+use gust_ecs::component::Transform;
+use gust_ecs::entity::Entity;
+
+use crate::world::World;
+
+#[derive(Debug)]
 pub struct Node {
-    name: String,
-    parent: Weak<Rc<RefCell<Node>>>,
-    children: Vec<Rc<RefCell<Node>>>,
-    transform: Mat4,
+    pub entity: Entity,
+    pub parent: Option<Entity>,
+    pub children: Vec<Entity>,
 }
 
 impl Node {
-    pub fn new(name: &str) -> Self {
+    pub fn new(entity: Entity) -> Self {
         Node {
-            name: name.to_string(),
-            parent: Weak::new(),
+            entity,
+            parent: None,
             children: Vec::new(),
-            transform: Mat4::identity(),
         }
     }
 }
 
-impl NodeTrait for Node {
-    fn update(&mut self, game: Game) {
-        for child in self.children.iter() {
-            child.borrow_mut().update();
+pub fn propagate_transform(world: &mut World) {
+    // Iterate over all entities in the scene tree
+    let mut queue: VecDeque<Entity> = VecDeque::new();
+
+    // Start from the root entities (entities without parents)
+    for entity in &world.entities {
+        if world.scene_tree.get_parent(*entity).is_none() {
+            queue.push_back(*entity);
         }
     }
 
-    fn render(&self) {
-        for child in self.children.iter() {
-            child.borrow().render();
+    // Breadth-first traversal to propagate transforms
+    while let Some(entity) = queue.pop_front() {
+        // Get the parent's transform if it exists
+        if let Some(parent) = world.scene_tree.get_parent(entity) {
+            if let (Some(TransformComponent(parent_transform)), Some(TransformComponent(entity_transform))) = (
+                world.get_component(parent, TransformType),
+                world.get_component_mut(entity, TransformType),
+            ) {
+                // Calculate global transform by combining parent's global transform and entity's local transform
+                *entity_transform = combine_transforms(parent_transform, entity_transform);
+            }
+        }
+
+        // Enqueue children for processing
+        if let Some(children) = world.scene_tree.get_children(entity) {
+            for &child in children {
+                queue.push_back(child);
+            }
         }
     }
+}
 
-    fn get_world_transform(&self) -> Mat4 {
-        let mut transform = self.transform.clone();
-
-        if let Some(parent) = self.parent.upgrade() {
-            transform = parent.borrow().get_world_transform() * transform;
-        }
-        transform
-    }
-
-    fn add_child(&mut self, child: Rc<RefCell<Node>>) {
-        child.borrow_mut().parent = Rc::downgrade(&Rc::new(RefCell::new(self.clone())));
-        self.children.push(child);
-    }
-
-    fn remove_child(&mut self, child: Rc<RefCell<Node>>) {
-        if let Some(index) = self.children.iter().position(|x| Rc::ptr_eq(x, &child)) {
-            self.children.remove(index);
-        }
-    }
+// Function to combine parent and local transforms
+fn combine_transforms(parent_transform: &Transform, local_transform: &Transform) -> Transform {
+    Transform(parent_transform.0 * local_transform.0)
 }
