@@ -5,6 +5,7 @@ use crate::component::Component::{TransformComponent, VelocityComponent};
 use crate::component::ComponentType::{TransformType, VelocityType};
 use crate::entity::Entity;
 
+#[derive(Debug, Clone)]
 pub struct ComponentStorage {
     storages: HashMap<Entity, Vec<Component>>,
 }

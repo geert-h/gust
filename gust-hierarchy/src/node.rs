@@ -40,8 +40,8 @@ pub fn propagate_transform(world: &mut World) {
         // Get the parent's transform if it exists
         if let Some(parent) = world.scene_tree.get_parent(entity) {
             if let (Some(TransformComponent(parent_transform)), Some(TransformComponent(entity_transform))) = (
-                world.get_component(parent, TransformType),
-                world.get_component_mut(entity, TransformType),
+                &world.component_storage.clone().get_component(parent, TransformType),
+                world.component_storage.get_component_mut(entity, TransformType),
             ) {
                 // Calculate global transform by combining parent's global transform and entity's local transform
                 *entity_transform = combine_transforms(parent_transform, entity_transform);

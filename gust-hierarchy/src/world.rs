@@ -1,13 +1,12 @@
 use std::collections::HashSet;
 
-use gust_ecs::component::{Component, ComponentType};
 use gust_ecs::component_storage::ComponentStorage;
 use gust_ecs::entity::Entity;
 
 use crate::scene_tree::SceneTree;
 
 pub struct World {
-    component_storage: ComponentStorage,
+    pub component_storage: ComponentStorage,
     pub scene_tree: SceneTree,
     pub entities: HashSet<Entity>,
     pub entity_count: usize,
@@ -31,28 +30,28 @@ impl World {
         entity
     }
 
-    // Add a component to an entity
-    pub fn add_component(&mut self, entity: Entity, component: Component) {
-        self.component_storage.add_component(entity, component);
-    }
-
-    // Get a component by its type
-    pub fn get_component(&self, entity: Entity, component_type: ComponentType) -> Option<&Component> {
-        self.component_storage.get_component(entity, component_type)
-    }
-
-    // Get a mutable component by its type
-    pub fn get_component_mut(&mut self, entity: Entity, component_type: ComponentType) -> Option<&mut Component> {
-        self.component_storage.get_component_mut(entity, component_type)
-    }
-
-    // Check if an entity has a component
-    pub fn has_component(&self, entity: Entity, component_type: ComponentType) -> bool {
-        self.component_storage.has_component(entity, component_type)
-    }
-
-    // Query entities that have all the specified component types
-    pub fn query(&self, component_types: Vec<ComponentType>) -> Vec<Entity> {
-        self.component_storage.query(component_types)
-    }
+    // // Add a component to an entity
+    // pub fn add_component(&mut self, entity: Entity, component: Component) {
+    //     self.component_storage.add_component(entity, component);
+    // }
+    //
+    // // Get a component by its type
+    // pub fn get_component(&self, entity: Entity, component_type: ComponentType) -> Option<&Component> {
+    //     self.component_storage.get_component(entity, component_type)
+    // }
+    //
+    // // Get a mutable component by its type
+    // pub fn get_component_mut(&mut self, entity: Entity, component_type: ComponentType) -> Option<&mut Component> {
+    //     self.component_storage.get_component_mut(entity, component_type)
+    // }
+    //
+    // // Check if an entity has a component
+    // pub fn has_component(&self, entity: Entity, component_type: ComponentType) -> bool {
+    //     self.component_storage.has_component(entity, component_type)
+    // }
+    //
+    // // Query entities that have all the specified component types
+    // pub fn query(&self, component_types: Vec<ComponentType>) -> Vec<Entity> {
+    //     self.component_storage.query(component_types)
+    // }
 }
