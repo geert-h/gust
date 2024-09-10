@@ -15,21 +15,25 @@ fn test() {
     let mut world = World::new();
 
     // Create entities
-    let parent = world.create_entity();
-    let child = world.create_entity();
+    let parent = world.spawn();
+    let child = world.spawn();
 
     // Set up the scene tree
-    world.scene_tree.set_parent(parent, child);
+    world.set_parent(parent, child);
 
     // Add components
-    world.component_storage.add_component(parent, TransformComponent(Transform(Mat4::identity().scale([1.0, 2.0, 3.0].into()))));
-    world.component_storage.add_component(child, TransformComponent(Transform(Mat4::identity().scale([1.0, 2.0, 3.0].into()))));
+    world.add_component(parent, TransformComponent(Transform(Mat4::identity())));
+    world.add_component(child, TransformComponent(Transform(Mat4::identity())));
 
     // Propagate transforms from parent to child
     propagate_transform(&mut world);
 
     // Get the child's global position
-    if let Some(TransformComponent(child_transform)) = world.component_storage.get_component(child, TransformType) {
+    if let Some(TransformComponent(child_transform)) = world.get_component(child, TransformType) {
         println!("Child's global position: {:?}", child_transform.0);
+    }
+
+    if let Some(TransformComponent(parent_transform)) = world.get_component(parent, TransformType) {
+        println!("Parent's global position: {:?}", parent_transform.0);
     }
 }

@@ -30,26 +30,42 @@ pub fn propagate_transform(world: &mut World) {
 
     // Start from the root entities (entities without parents)
     for entity in &world.entities {
-        if world.scene_tree.get_parent(*entity).is_none() {
+        if world.get_parent(*entity).is_none() {
             queue.push_back(*entity);
         }
     }
 
     // Breadth-first traversal to propagate transforms
     while let Some(entity) = queue.pop_front() {
-        // Get the parent's transform if it exists
-        if let Some(parent) = world.scene_tree.get_parent(entity) {
-            if let (Some(TransformComponent(parent_transform)), Some(TransformComponent(entity_transform))) = (
-                &world.component_storage.clone().get_component(parent, TransformType),
-                world.component_storage.get_component_mut(entity, TransformType),
-            ) {
-                // Calculate global transform by combining parent's global transform and entity's local transform
-                *entity_transform = combine_transforms(parent_transform, entity_transform);
+        // Get the parent entity
+        let parent = world.get_parent(entity);
+
+        // Extract the parent transform and the entity transform as separate variables
+        let (parent_transform, entity_transform) = match parent {
+            Some(parent_entity) => {
+                // Get the parent's transform (immutable borrow)
+                let parent_transform = world.get_component(parent_entity, TransformType);
+                // Get the entity's transform (we won't mutate it yet)
+                let entity_transform = world.get_component(entity, TransformType);
+                (parent_transform, entity_transform)
+            }
+            None => (None, world.get_component(entity, TransformType)),
+        };
+
+        // Now perform the mutable borrow on the entity's transform
+        if let (Some(TransformComponent(parent_transform)), Some(TransformComponent(entity_transform))) = (parent_transform, entity_transform) {
+            // Combine the parent's global transform with the entity's local transform
+            let new_transform = combine_transforms(parent_transform, entity_transform);
+
+            // Now apply the new transform with a mutable borrow
+            if let Some(TransformComponent(entity_transform_mut)) = world.get_component_mut(entity, TransformType) {
+                *entity_transform_mut = new_transform;
             }
         }
 
         // Enqueue children for processing
-        if let Some(children) = world.scene_tree.get_children(entity) {
+        let children = world.get_children(entity);
+        if let Some(children) = children {
             for &child in children {
                 queue.push_back(child);
             }
