@@ -2,7 +2,8 @@ use winit::keyboard::{Key, NamedKey};
 
 use gust_math::matrices::mat3::Mat3;
 use gust_math::vectors::vect3::Vect3;
-use crate::components::viewer::Viewer;
+
+use crate::entities::viewer::Viewer;
 use crate::handlers::input_handler::InputHandler;
 
 #[derive(Copy, Clone)]

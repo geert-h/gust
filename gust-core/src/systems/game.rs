@@ -5,10 +5,19 @@ use std::time::Instant;
 use glium::{Texture2d, uniform};
 use glium::uniforms::{UniformBuffer, Uniforms};
 
+use gust_hierarchy::storages::image_storage::ImageId;
+use gust_hierarchy::storages::mesh_storage::MeshId;
+use gust_hierarchy::world::World;
 use gust_math::matrices::mat4::Mat4;
 use gust_math::vectors::vect3::Vect3;
-use crate::components::player::Player;
-use crate::components::viewer::Viewer;
+
+use crate::components::image_component::ImageComponent;
+use crate::components::mesh_component::MeshComponent;
+use crate::components::player_component::PlayerComponent;
+use crate::components::transform_component::TransformComponent;
+use crate::components::velocity_component::VelocityComponent;
+use crate::entities::player::Player;
+use crate::entities::viewer::Viewer;
 use crate::handlers::event_handler::EventHandler;
 use crate::handlers::input_handler::InputHandler;
 use crate::objects::game_object::GameObject;
@@ -20,23 +29,25 @@ use crate::systems::renderer::Renderer;
 pub struct Game {
     pub t: f32,
     pub dt: f32,
-    pub objects: Vec<GameObject>,
+    // pub objects: Vec<GameObject>,
     pub player: Player,
     pub game_input: InputHandler,
     pub last_frame_time: Instant,
+    pub world: World,
 }
 
 impl Game {
     pub fn new() -> Self {
-        let objects = Self::construct_objects();
+        // let objects = Self::construct_objects();
 
         Game {
             t: 0.0,
             dt: 0.0,
             player: Player::init(),
             game_input: InputHandler::new(),
-            objects,
+            // objects,
             last_frame_time: Instant::now(),
+            world: World::new(),
         }
     }
 
@@ -62,8 +73,40 @@ impl Game {
         vec![object, floor_object]
     }
 
-    pub fn load_objects(&mut self) {
-        self.objects = Self::construct_objects();
+    fn construct_scene() -> World {
+        let mut world = World::new();
+
+        // Make player entity
+        let player = world.spawn();
+        let identity_transform = TransformComponent {
+            position: [-5.0, 0.0, 1.0].into(),
+            forward: [1.0, 0.0, 0.0].into(),
+            up: [0.0, 0.0, 1.0].into(),
+            scale: [1.0, 1.0, 1.0].into(),
+        };
+
+        let velocity = VelocityComponent {
+            velocity: [0.0, 0.0, 0.0].into(),
+            acceleration: [0.0, 0.0, 0.0].into(),
+        };
+
+        world.add_component(player, identity_transform);
+        world.add_component(player, velocity);
+        world.add_component(player, PlayerComponent);
+
+        // Make floor object
+        let floor = world.spawn();
+        let floor_transform = TransformComponent {
+            position: [0.0, 0.0, 0.0].into(),
+            forward: [1.0, 0.0, 0.0].into(),
+            up: [0.0, 0.0, 1.0].into(),
+            scale: [1.0, 1.0, 1.0].into(),
+        };
+        world.add_component(floor, floor_transform);
+        world.add_component(floor, MeshComponent(MeshId(0)));
+        world.add_component(floor, ImageComponent(ImageId(0)));
+
+        world
     }
 
     pub fn update(&mut self) {

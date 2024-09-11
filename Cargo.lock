@@ -691,7 +691,6 @@ name = "gust-core"
 version = "0.1.0"
 dependencies = [
  "glium",
- "gust-ecs",
  "gust-hierarchy",
  "gust-math",
  "image",
@@ -701,17 +700,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "gust-ecs"
-version = "0.1.0"
-dependencies = [
- "gust-math",
-]
-
-[[package]]
 name = "gust-hierarchy"
 version = "0.1.0"
 dependencies = [
- "gust-ecs",
  "gust-math",
 ]
 
@@ -728,7 +719,6 @@ version = "0.1.0"
 dependencies = [
  "glium",
  "gust-core",
- "gust-ecs",
  "gust-hierarchy",
  "gust-math",
  "image",

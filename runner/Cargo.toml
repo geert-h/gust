@@ -18,4 +18,3 @@ gust-core = { path = "../gust-core" }
 smol_str = "*"
 gust-math = { path = "../gust-math" }
 gust-hierarchy = { path = "../gust-hierarchy" }
-gust-ecs = { path = "../gust-ecs" }

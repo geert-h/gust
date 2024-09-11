@@ -1,4 +1,5 @@
-pub mod player;
-pub mod camera;
-pub mod light;
-pub mod viewer;
+pub mod transform_component;
+pub mod player_component;
+pub mod velocity_component;
+pub mod mesh_component;
+pub mod image_component;

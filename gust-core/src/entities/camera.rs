@@ -1,7 +1,8 @@
 use std::f32::consts::PI;
 
 use gust_math::vectors::vect3::Vect3;
-use crate::components::viewer::Viewer;
+
+use crate::entities::viewer::Viewer;
 
 pub struct Camera {
     pub id: u32,
