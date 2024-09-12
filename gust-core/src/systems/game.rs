@@ -23,9 +23,10 @@ use crate::objects::game_object::GameObject;
 use crate::objects::intermediaries::wavefront_object::WavefrontObject;
 use crate::primitives::lights_block::LightsBlock;
 use crate::primitives::mesh::Mesh;
-use crate::storages::mesh_storage::{MeshId, MeshStorage};
-use crate::storages::texture_storage::{TextureId, TextureStorage};
+use crate::storages::mesh_storage::MeshStorage;
+use crate::storages::texture_storage::TextureStorage;
 use crate::systems::render_system::RenderSystem;
+use crate::systems::update_systems::UpdateSystem;
 
 pub struct Game {
     pub t: f32,
@@ -78,7 +79,29 @@ impl Game {
         vec![object, floor_object]
     }
 
-    fn construct_scene(display: &Display<WindowSurface>) -> World {
+    fn construct_scene(&mut self, display: &Display<WindowSurface>) -> World {
+
+        // Load the meshes
+        let mesh = Mesh::from_wavefront(WavefrontObject::parse(Path::new("./resources/assets/objects/monkey.obj")));
+        let floor_mesh = Mesh::from_wavefront(WavefrontObject::parse(Path::new("./resources/assets/objects/floor.obj")));
+
+        // Add them to the mesh storage
+        let monkey_mesh_id = self.mesh_storage.add_mesh(mesh);
+        let floor_mesh_id = self.mesh_storage.add_mesh(floor_mesh);
+
+        // Load the textures
+        let image = image::load(std::io::Cursor::new(&include_bytes!("../../../resources/assets/green.png")), image::ImageFormat::Png).unwrap().to_rgba8();
+        let image = glium::texture::RawImage2d::from_raw_rgba_reversed(&image.clone().into_raw(), image.dimensions());
+        let texture = Texture2d::new(display, image).unwrap();
+
+        let floor_image = image::load(std::io::Cursor::new(&include_bytes!("../../../resources/assets/wood.jpg")), image::ImageFormat::Jpeg).unwrap().to_rgba8();
+        let floor_image = glium::texture::RawImage2d::from_raw_rgba_reversed(&floor_image.clone().into_raw(), floor_image.dimensions());
+        let floor_texture = Texture2d::new(display, floor_image).unwrap();
+
+        // Add them to the texture storage
+        let monkey_texture_id = self.texture_storage.add_texture(texture);
+        let floor_texture_id = self.texture_storage.add_texture(floor_texture);
+
         let mut world = World::new();
 
         // Make player entity
@@ -99,6 +122,19 @@ impl Game {
         world.add_component(player, velocity);
         world.add_component(player, PlayerComponent);
 
+        // Make monkey object
+        let monkey = world.spawn();
+        let monkey_transform = TransformComponent {
+            position: [0.0, 0.0, 1.0].into(),
+            forward: [1.0, 0.0, 0.0].into(),
+            up: [0.0, 0.0, 1.0].into(),
+            scale: [1.0, 1.0, 1.0].into(),
+        };
+
+        world.add_component(monkey, monkey_transform);
+        world.add_component(monkey, MeshComponent(monkey_mesh_id));
+        world.add_component(monkey, ImageComponent(monkey_texture_id));
+
         // Make floor object
         let floor = world.spawn();
         let floor_transform = TransformComponent {
@@ -109,19 +145,21 @@ impl Game {
         };
 
         world.add_component(floor, floor_transform);
-        world.add_component(floor, MeshComponent(MeshId(0)));
-        world.add_component(floor, ImageComponent(TextureId(0)));
+        world.add_component(floor, MeshComponent(floor_mesh_id));
+        world.add_component(floor, ImageComponent(floor_texture_id));
 
         world
     }
 
     pub fn update(&mut self) {
-        if self.input_handler.keyboard_input.is_character_pressed('r') {
-            self.player = Player::init();
-        }
-        let mut player = self.player.clone();
-        player.update(&self.dt, &self.input_handler);
-        self.player = player;
+        // if self.input_handler.keyboard_input.is_character_pressed('r') {
+        //     self.player = Player::init();
+        // }
+        // let mut player = self.player.clone();
+        // player.update(&self.dt, &self.input_handler);
+        // self.player = player;
+
+        UpdateSystem::update(self.dt, &self.input_handler, &mut self.world);
     }
 
     pub fn run(&mut self) {

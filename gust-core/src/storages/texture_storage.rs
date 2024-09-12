@@ -4,6 +4,7 @@ use glium::Texture2d;
 
 pub struct TextureStorage {
     textures: HashMap<TextureId, Texture2d>,
+    texture_count: usize,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -13,11 +14,21 @@ impl TextureStorage {
     pub fn new() -> Self {
         TextureStorage {
             textures: HashMap::new(),
+            texture_count: 0,
         }
     }
 
-    pub fn add_texture(&mut self, texture_id: TextureId, texture: Texture2d) {
-        self.textures.insert(texture_id, texture);
+    pub fn add_texture(&mut self, texture: Texture2d) -> TextureId {
+        self.texture_count += 1;
+        let texture_id = TextureId(self.texture_count as u32);
+
+        let res = self.textures.insert(texture_id, texture);
+
+        if res.is_some() {
+            self.texture_count -= 1;
+        }
+
+        texture_id
     }
 
     pub fn get_texture(&self, texture_id: TextureId) -> Option<&Texture2d> {

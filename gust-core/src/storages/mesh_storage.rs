@@ -4,6 +4,7 @@ use crate::primitives::mesh::Mesh;
 
 pub struct MeshStorage {
     pub meshes: HashMap<MeshId, Mesh>,
+    mesh_count: usize,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -13,11 +14,20 @@ impl MeshStorage {
     pub fn new() -> Self {
         MeshStorage {
             meshes: HashMap::new(),
+            mesh_count: 0,
         }
     }
 
-    pub fn add_mesh(&mut self, mesh_id: MeshId, mesh: Mesh) {
-        self.meshes.insert(mesh_id, mesh);
+    pub fn add_mesh(&mut self, mesh: Mesh) -> MeshId {
+        self.mesh_count += 1;
+        let mesh_id = MeshId(self.mesh_count as u32);
+        let res = self.meshes.insert(mesh_id, mesh);
+
+        if res.is_some() {
+            self.mesh_count -= 1;
+        }
+
+        mesh_id
     }
 
     pub fn get_mesh(&self, mesh_id: MeshId) -> Option<&Mesh> {
