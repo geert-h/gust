@@ -1,18 +1,20 @@
-use glium::{Display, Program, Surface, Texture2d, VertexBuffer};
+use glium::{Display, Frame, Program, Surface, Texture2d, VertexBuffer};
 use glium::DrawParameters;
 use glium::glutin::surface::WindowSurface;
-use glium::uniforms::UniformBuffer;
+use glium::uniforms::{UniformBuffer, Uniforms};
+
+use crate::objects::game_object::GameObject;
 use crate::primitives::lights_block::LightsBlock;
 use crate::primitives::vertex::Vertex;
-use crate::systems::game::{Game};
+use crate::systems::game::Game;
 
-pub struct Renderer {
+pub struct RenderSystem {
     pub display: Display<WindowSurface>,
     program: Program,
     params: DrawParameters<'static>,
 }
 
-impl Renderer {
+impl RenderSystem {
     pub fn new(display: Display<WindowSurface>) -> Self {
         let vert_shader_string = include_str!("../../../../resources/shaders/vert.glsl");
         let frac_shader_string = include_str!("../../../../resources/shaders/frac.glsl");
@@ -34,7 +36,7 @@ impl Renderer {
             ..Default::default()
         };
 
-        Renderer {
+        RenderSystem {
             display,
             program,
             params,
@@ -66,5 +68,37 @@ impl Renderer {
                 .unwrap();
         }
         target.finish().unwrap();
+    }
+
+    pub fn draw_objects(&self, game: &Game, textures: &[Texture2d], buffer: &UniformBuffer<LightsBlock>) {
+        let mut target = self.display.draw();
+        target.clear_color_and_depth((0.0, 0.0, 0.0, 1.0), 1.0);
+
+        for (object, texture) in game.objects.iter().zip(textures) {
+            self.draw_object(&mut target, &self.display, object, &game.get_uniforms(game.player.clone(), object, texture, &buffer));
+        }
+
+        target.finish().unwrap();
+    }
+
+    pub fn draw_object(&self, target: &mut Frame, display: &Display<WindowSurface>, object: &GameObject, uniforms: &impl Uniforms) {
+        let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
+
+        let flattened_triangles: Vec<Vertex> = object.mesh.triangles
+            .iter()
+            .flat_map(|triangle| triangle.iter().cloned())
+            .collect();
+
+        let vertex_buffer = VertexBuffer::new(display, &flattened_triangles).unwrap();
+
+        target
+            .draw(
+                &vertex_buffer,
+                &indices,
+                &self.program,
+                uniforms,
+                &self.params,
+            )
+            .unwrap();
     }
 }

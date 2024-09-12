@@ -1,5 +1,3 @@
-#![allow(non_snake_case)]
-
 use std::marker::PhantomData;
 
 pub trait Query {
@@ -23,4 +21,14 @@ pub struct QueryWith<Q: ?Sized + Query, T: 'static> {
 
 impl<Q: ?Sized + Query, T: 'static> Query for QueryWith<Q, T> {
     type Item = Q::Item;
+
+    fn with<U: 'static>(self) -> QueryWith<Self, U>
+    where
+        Self: Sized,
+    {
+        QueryWith {
+            query: Box::new(self),
+            _marker: PhantomData,
+        }
+    }
 }

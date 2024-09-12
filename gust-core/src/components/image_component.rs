@@ -1,3 +1,3 @@
-use gust_hierarchy::storages::image_storage::ImageId;
+use crate::storages::texture_storage::TextureId;
 
-pub struct ImageComponent(pub ImageId);
+pub struct ImageComponent(pub TextureId);

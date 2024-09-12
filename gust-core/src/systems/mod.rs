@@ -1,3 +1,3 @@
 pub mod game;
-pub mod renderer;
-mod update_system;
+pub mod render_system;
+pub mod update_systems;

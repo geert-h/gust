@@ -40,8 +40,8 @@ impl ComponentStorage {
 
 #[cfg(test)]
 mod tests {
+    use crate::component_storage::ComponentStorage;
     use crate::entity::Entity;
-    use crate::storages::component_storage::ComponentStorage;
 
     #[derive(Debug, Clone, PartialEq)]
     struct Transform {

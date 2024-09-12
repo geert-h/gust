@@ -2,11 +2,10 @@ use std::path::Path;
 use std::rc::Rc;
 use std::time::Instant;
 
-use glium::{Texture2d, uniform};
+use glium::{Display, Texture2d, uniform};
+use glium::glutin::surface::WindowSurface;
 use glium::uniforms::{UniformBuffer, Uniforms};
 
-use gust_hierarchy::storages::image_storage::ImageId;
-use gust_hierarchy::storages::mesh_storage::MeshId;
 use gust_hierarchy::world::World;
 use gust_math::matrices::mat4::Mat4;
 use gust_math::vectors::vect3::Vect3;
@@ -24,30 +23,36 @@ use crate::objects::game_object::GameObject;
 use crate::objects::intermediaries::wavefront_object::WavefrontObject;
 use crate::primitives::lights_block::LightsBlock;
 use crate::primitives::mesh::Mesh;
-use crate::systems::renderer::Renderer;
+use crate::storages::mesh_storage::{MeshId, MeshStorage};
+use crate::storages::texture_storage::{TextureId, TextureStorage};
+use crate::systems::render_system::RenderSystem;
 
 pub struct Game {
     pub t: f32,
     pub dt: f32,
-    // pub objects: Vec<GameObject>,
+    pub objects: Vec<GameObject>,
     pub player: Player,
-    pub game_input: InputHandler,
+    pub input_handler: InputHandler,
     pub last_frame_time: Instant,
     pub world: World,
+    pub mesh_storage: MeshStorage,
+    pub texture_storage: TextureStorage,
 }
 
 impl Game {
     pub fn new() -> Self {
-        // let objects = Self::construct_objects();
+        let objects = Self::construct_objects();
 
         Game {
             t: 0.0,
             dt: 0.0,
             player: Player::init(),
-            game_input: InputHandler::new(),
-            // objects,
+            input_handler: InputHandler::new(),
+            objects,
             last_frame_time: Instant::now(),
             world: World::new(),
+            mesh_storage: MeshStorage::new(),
+            texture_storage: TextureStorage::new(),
         }
     }
 
@@ -73,7 +78,7 @@ impl Game {
         vec![object, floor_object]
     }
 
-    fn construct_scene() -> World {
+    fn construct_scene(display: &Display<WindowSurface>) -> World {
         let mut world = World::new();
 
         // Make player entity
@@ -102,46 +107,29 @@ impl Game {
             up: [0.0, 0.0, 1.0].into(),
             scale: [1.0, 1.0, 1.0].into(),
         };
+
         world.add_component(floor, floor_transform);
         world.add_component(floor, MeshComponent(MeshId(0)));
-        world.add_component(floor, ImageComponent(ImageId(0)));
+        world.add_component(floor, ImageComponent(TextureId(0)));
 
         world
     }
 
     pub fn update(&mut self) {
-        if self.game_input.keyboard_input.is_character_pressed('r') {
+        if self.input_handler.keyboard_input.is_character_pressed('r') {
             self.player = Player::init();
         }
         let mut player = self.player.clone();
-        player.update(&self.dt, &self.game_input);
+        player.update(&self.dt, &self.input_handler);
         self.player = player;
     }
 
     pub fn run(&mut self) {
-        let (event_handler, display) = EventHandler::new();
+        let (mut event_handler, display) = EventHandler::new();
 
-        let light_positions: [[f32; 3]; 5] = [
-            [0.0, 0.0, 5.0],
-            [10.0, 10.0, 5.0],
-            [-10.0, 10.0, 5.0],
-            [10.0, -10.0, 5.0],
-            [-10.0, -10.0, 5.0],
-        ];
+        let render_system = RenderSystem::new(display);
 
-        let light_colors: [[f32; 3]; 5] = [
-            [1.0, 1.0, 1.0]; 5
-        ];
-
-        let buffer = UniformBuffer::new(&display, LightsBlock {
-            light_positions,
-            _padding: [0.0; 5],
-            light_colors,
-        }).unwrap();
-
-        let renderer = Renderer::new(display);
-
-        event_handler.run(self, renderer, buffer);
+        event_handler.run(self, render_system);
     }
 
     pub fn get_uniforms<'b>(&'b self, player: Player, object: &GameObject, texture: &'b Texture2d, buffer: &'b UniformBuffer<LightsBlock>) -> impl Uniforms + 'b {

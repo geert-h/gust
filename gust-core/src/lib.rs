@@ -4,3 +4,4 @@ pub mod objects;
 pub mod primitives;
 pub mod entities;
 pub mod components;
+pub mod storages;

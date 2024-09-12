@@ -1,8 +1,8 @@
 use std::collections::HashSet;
 
+use crate::component_storage::ComponentStorage;
 use crate::entity::Entity;
 use crate::scene_tree::SceneTree;
-use crate::storages::component_storage::ComponentStorage;
 
 /// The World struct is the main struct that holds all the entities and components.
 /// It is responsible for creating, adding, and removing entities and components.

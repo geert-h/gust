@@ -1,12 +1,13 @@
 use std::collections::VecDeque;
 
+use gust_core::systems::game::Game;
 use gust_hierarchy::entity::Entity;
 use gust_hierarchy::world::World;
 use gust_math::matrices::mat4::Mat4;
 
 fn main() {
-    test();
-    // Game::new().run();
+    // test();
+    Game::new().run();
 }
 
 #[derive(Clone, Debug)]
