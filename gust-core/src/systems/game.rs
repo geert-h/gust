@@ -4,13 +4,13 @@ use std::time::Instant;
 
 use glium::{Display, Texture2d, uniform};
 use glium::glutin::surface::WindowSurface;
-use glium::uniforms::{UniformBuffer, Uniforms};
+use glium::uniforms::{UniformBuffer, Uniforms, UniformsStorage};
 
 use gust_hierarchy::world::World;
 use gust_math::matrices::mat4::Mat4;
 use gust_math::vectors::vect3::Vect3;
 
-use crate::components::image_component::ImageComponent;
+use crate::components::texture_component::TextureComponent;
 use crate::components::mesh_component::MeshComponent;
 use crate::components::player_component::PlayerComponent;
 use crate::components::transform_component::TransformComponent;
@@ -133,7 +133,7 @@ impl Game {
 
         world.add_component(monkey, monkey_transform);
         world.add_component(monkey, MeshComponent(monkey_mesh_id));
-        world.add_component(monkey, ImageComponent(monkey_texture_id));
+        world.add_component(monkey, TextureComponent(monkey_texture_id));
 
         // Make floor object
         let floor = world.spawn();
@@ -146,7 +146,7 @@ impl Game {
 
         world.add_component(floor, floor_transform);
         world.add_component(floor, MeshComponent(floor_mesh_id));
-        world.add_component(floor, ImageComponent(floor_texture_id));
+        world.add_component(floor, TextureComponent(floor_texture_id));
 
         world
     }
@@ -174,6 +174,7 @@ impl Game {
         let view = player.view_matrix();
 
         let lights_used = 1;
+
 
         uniform! {
             perspective: player.get_perspective(),
