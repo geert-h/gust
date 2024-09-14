@@ -12,7 +12,6 @@ use crate::components::mesh_component::MeshComponent;
 use crate::components::player_component::PlayerComponent;
 use crate::components::texture_component::TextureComponent;
 use crate::components::transform_component::TransformComponent;
-use crate::objects::game_object::GameObject;
 use crate::primitives::lights_block::LightsBlock;
 use crate::primitives::mesh::Mesh;
 use crate::primitives::vertex::Vertex;
@@ -53,44 +52,11 @@ impl RenderSystem {
         }
     }
 
-    pub fn render(&self, game: &Game, textures: &[Texture2d], buffer: &UniformBuffer<LightsBlock>) {
-        // self.draw_objects(game, textures, buffer);
-        self.new_draw_objects(game, buffer);
+    pub fn render(&self, game: &Game, buffer: &UniformBuffer<LightsBlock>) {
+        self.draw_objects(game, buffer);
     }
 
-    pub fn draw_objects(&self, game: &Game, textures: &[Texture2d], buffer: &UniformBuffer<LightsBlock>) {
-        let mut target = self.display.draw();
-        target.clear_color_and_depth((0.0, 0.0, 0.0, 1.0), 1.0);
-
-        for (object, texture) in game.objects.iter().zip(textures) {
-            self.draw_object(&mut target, &self.display, object, &game.get_uniforms(game.player.clone(), object, texture, &buffer));
-        }
-
-        target.finish().unwrap();
-    }
-
-    pub fn draw_object(&self, target: &mut Frame, display: &Display<WindowSurface>, object: &GameObject, uniforms: &impl Uniforms) {
-        let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
-
-        let flattened_triangles: Vec<Vertex> = object.mesh.triangles
-            .iter()
-            .flat_map(|triangle| triangle.iter().cloned())
-            .collect();
-
-        let vertex_buffer = VertexBuffer::new(display, &flattened_triangles).unwrap();
-
-        target
-            .draw(
-                &vertex_buffer,
-                &indices,
-                &self.program,
-                uniforms,
-                &self.params,
-            )
-            .unwrap();
-    }
-
-    pub fn new_draw_objects(&self, game: &Game, buffer: &UniformBuffer<LightsBlock>) {
+    pub fn draw_objects(&self, game: &Game, buffer: &UniformBuffer<LightsBlock>) {
         let mut target = self.display.draw();
         target.clear_color_and_depth((0.0, 0.0, 0.0, 1.0), 1.0);
 
@@ -119,14 +85,14 @@ impl RenderSystem {
             let mesh = game.mesh_storage.get_mesh(mesh_id.0).unwrap();
             let texture = game.texture_storage.get_texture(texture_id.0).unwrap();
 
-            self.new_draw_object(&mut target, &self.display, object_transform, player_view, player_perspective, mesh, texture, buffer);
+            self.draw_object(&mut target, &self.display, object_transform, player_view, player_perspective, mesh, texture, buffer);
         }
 
         target.finish().unwrap();
     }
 
-    pub fn new_draw_object(&self, target: &mut Frame, display: &Display<WindowSurface>, object_transform: [[f32; 4]; 4], player_view: [[f32; 4]; 4], player_perspective: [[f32; 4]; 4], mesh: &Mesh, texture: &Texture2d, buffer: &UniformBuffer<LightsBlock>) {
-        let uniforms = self.new_get_uniforms(object_transform, player_view, player_perspective, &texture, &buffer);
+    pub fn draw_object(&self, target: &mut Frame, display: &Display<WindowSurface>, object_transform: [[f32; 4]; 4], player_view: [[f32; 4]; 4], player_perspective: [[f32; 4]; 4], mesh: &Mesh, texture: &Texture2d, buffer: &UniformBuffer<LightsBlock>) {
+        let uniforms = self.get_uniforms(object_transform, player_view, player_perspective, &texture, &buffer);
 
         let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
 
@@ -148,7 +114,7 @@ impl RenderSystem {
             .unwrap();
     }
 
-    fn new_get_uniforms<'a>(&'a self, model_transform: [[f32; 4]; 4], player_view: [[f32; 4]; 4], player_perspective: [[f32; 4]; 4], texture: &'a Texture2d, buffer: &'a UniformBuffer<LightsBlock>) -> impl Uniforms + 'a {
+    fn get_uniforms<'a>(&'a self, model_transform: [[f32; 4]; 4], player_view: [[f32; 4]; 4], player_perspective: [[f32; 4]; 4], texture: &'a Texture2d, buffer: &'a UniformBuffer<LightsBlock>) -> impl Uniforms + 'a {
         let lights_used = 5;
 
         uniform! {

@@ -11,7 +11,6 @@ impl ObjectRotationSystem {
     pub fn update(world: &mut World, dt: f32) {
         let entities = world.query::<TransformComponent>();
 
-
         for entity in entities {
             //retain player entity
             if world.has_component::<PlayerComponent>(entity) ||
@@ -19,7 +18,7 @@ impl ObjectRotationSystem {
                 continue;
             }
 
-            let mut transform = world.get_component_mut::<TransformComponent>(entity).unwrap();
+            let transform = world.get_component_mut::<TransformComponent>(entity).unwrap();
 
             // rotate the forward vector around the up vector
             let rotation_matrix = Mat3::rotation_matrix(&transform.up, 0.1 * dt);

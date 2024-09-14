@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-use glium::{Display, Texture2d};
+use glium::Display;
 use glium::glutin::surface::WindowSurface;
 use glium::uniforms::UniformBuffer;
 use winit::dpi::PhysicalPosition;
@@ -31,8 +31,6 @@ impl EventHandler {
     }
 
     pub fn run(self, game: &mut Game, render_system: RenderSystem) {
-        let textures: Vec<_> = game.objects.iter().map(|object| object.get_texture(&render_system.display)).collect();
-
         self.initialize_window();
 
         let buffer = self.construct_light_block(&render_system.display);
@@ -63,7 +61,7 @@ impl EventHandler {
                         render_system.display.resize(window_size.into());
                     }
                     winit::event::WindowEvent::RedrawRequested => {
-                        EventHandler::handle_redraw_request(mouse_position, game, &render_system, &textures, &buffer);
+                        EventHandler::handle_redraw_request(mouse_position, game, &render_system, &buffer);
                     }
                     _ => (),
                 },
@@ -103,7 +101,7 @@ impl EventHandler {
         self.window.set_cursor_visible(false);
     }
 
-    fn handle_redraw_request(mouse_position: PhysicalPosition<f64>, game: &mut Game, render_system: &RenderSystem, textures: &Vec<Texture2d>, buffer: &UniformBuffer<LightsBlock>) {
+    fn handle_redraw_request(mouse_position: PhysicalPosition<f64>, game: &mut Game, render_system: &RenderSystem, buffer: &UniformBuffer<LightsBlock>) {
         let now = Instant::now();
         let elapsed = now.duration_since(game.last_frame_time);
 
@@ -113,6 +111,6 @@ impl EventHandler {
 
         game.input_handler.handle_mouse_input(mouse_position);
         game.update();
-        render_system.render(game, textures, buffer);
+        render_system.render(game, buffer);
     }
 }
