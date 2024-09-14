@@ -108,7 +108,14 @@ impl World {
             .collect()
     }
 
-    pub fn query_one<T: 'static>(&mut self) -> Option<Entity> {
+    pub fn query_one<T: 'static>(&self) -> Option<Entity> {
+        self.entities
+            .iter()
+            .find(|entity| self.has_component::<T>(**entity))
+            .copied()
+    }
+
+    pub fn query_one_mut<T: 'static>(&mut self) -> Option<Entity> {
         self.entities
             .iter()
             .find(|entity| self.has_component::<T>(**entity))

@@ -100,7 +100,7 @@ impl Mat4 {
         mat.data[0][0] = scale[0];
         mat.data[1][1] = scale[1];
         mat.data[2][2] = scale[2];
-        mat
+        self.clone() * mat
     }
 
     pub fn rotate(&self, angle: f32, axis: Vect3) -> Self {
@@ -123,20 +123,27 @@ impl Mat4 {
         mat
     }
 
-    pub fn rotate_with_dir_and_up(&self, direction: Vect3, up: Vect3) -> Self {
+    pub fn rotate_with_dir_and_up(&self, forward: Vect3, up: Vect3) -> Self {
+        // Standard forward is x, up is z, and right is y
+        let local_forward = Vect3::new(1.0, 0.0, 0.0);
+        let local_up = Vect3::new(0.0, 0.0, 1.0);
+        let local_right = Vect3::new(0.0, 1.0, 0.0);
+
+        let f = forward.clone().normalize();
+        let u = up.clone().normalize();
+        let r = u.cross(&f).normalize();
+
         let mut mat = Mat4::identity();
-        let right = direction.cross(&up).normalize();
-        let new_up = right.cross(&direction).normalize();
-        mat.data[0][0] = right.x;
-        mat.data[0][1] = right.y;
-        mat.data[0][2] = right.z;
-        mat.data[1][0] = new_up.x;
-        mat.data[1][1] = new_up.y;
-        mat.data[1][2] = new_up.z;
-        mat.data[2][0] = direction.x;
-        mat.data[2][1] = direction.y;
-        mat.data[2][2] = direction.z;
-        mat
+        mat.data[0][0] = r.dot(&local_right);
+        mat.data[0][1] = r.dot(&local_up);
+        mat.data[0][2] = r.dot(&local_forward);
+        mat.data[1][0] = u.dot(&local_forward);
+        mat.data[1][1] = u.dot(&local_up);
+        mat.data[1][2] = u.dot(&local_forward);
+        mat.data[2][0] = f.dot(&local_right);
+        mat.data[2][1] = f.dot(&local_up);
+        mat.data[2][2] = f.dot(&local_forward);
+        self.clone() * mat
     }
 
     pub fn dot(&self, other: &Mat4) -> Self {

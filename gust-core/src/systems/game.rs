@@ -1,18 +1,20 @@
+use std::f32::consts::PI;
 use std::path::Path;
 use std::rc::Rc;
 use std::time::Instant;
 
 use glium::{Display, Texture2d, uniform};
 use glium::glutin::surface::WindowSurface;
-use glium::uniforms::{UniformBuffer, Uniforms, UniformsStorage};
+use glium::uniforms::{UniformBuffer, Uniforms};
 
 use gust_hierarchy::world::World;
 use gust_math::matrices::mat4::Mat4;
 use gust_math::vectors::vect3::Vect3;
 
-use crate::components::texture_component::TextureComponent;
+use crate::components::camera_component::CameraComponent;
 use crate::components::mesh_component::MeshComponent;
 use crate::components::player_component::PlayerComponent;
+use crate::components::texture_component::TextureComponent;
 use crate::components::transform_component::TransformComponent;
 use crate::components::velocity_component::VelocityComponent;
 use crate::entities::player::Player;
@@ -82,11 +84,11 @@ impl Game {
     fn construct_scene(&mut self, display: &Display<WindowSurface>) -> World {
 
         // Load the meshes
-        let mesh = Mesh::from_wavefront(WavefrontObject::parse(Path::new("./resources/assets/objects/monkey.obj")));
+        let monkey_mesh = Mesh::from_wavefront(WavefrontObject::parse(Path::new("./resources/assets/objects/monkey.obj")));
         let floor_mesh = Mesh::from_wavefront(WavefrontObject::parse(Path::new("./resources/assets/objects/floor.obj")));
 
         // Add them to the mesh storage
-        let monkey_mesh_id = self.mesh_storage.add_mesh(mesh);
+        let monkey_mesh_id = self.mesh_storage.add_mesh(monkey_mesh);
         let floor_mesh_id = self.mesh_storage.add_mesh(floor_mesh);
 
         // Load the textures
@@ -118,9 +120,17 @@ impl Game {
             acceleration: [0.0, 0.0, 0.0].into(),
         };
 
+        let camera = CameraComponent {
+            fov: PI / 3.0,
+            aspect_ratio: 480.0 / 800.0,
+            z_near: 0.1,
+            z_far: 1024.0,
+        };
+
         world.add_component(player, identity_transform);
         world.add_component(player, velocity);
         world.add_component(player, PlayerComponent);
+        world.add_component(player, camera);
 
         // Make monkey object
         let monkey = world.spawn();
@@ -148,6 +158,18 @@ impl Game {
         world.add_component(floor, MeshComponent(floor_mesh_id));
         world.add_component(floor, TextureComponent(floor_texture_id));
 
+        let transform_entity = world.spawn();
+        let transform = TransformComponent {
+            position: [0.0, 0.0, 0.0].into(),
+            forward: [1.0, 0.0, 0.0].into(),
+            up: [0.0, 0.0, 1.0].into(),
+            scale: [2.0, 1.0, 1.0].into(),
+        };
+
+        world.add_component(transform_entity, transform);
+
+        world.set_parent(transform_entity, monkey);
+
         world
     }
 
@@ -165,6 +187,8 @@ impl Game {
     pub fn run(&mut self) {
         let (mut event_handler, display) = EventHandler::new();
 
+        self.world = self.construct_scene(&display);
+
         let render_system = RenderSystem::new(display);
 
         event_handler.run(self, render_system);
@@ -173,8 +197,7 @@ impl Game {
     pub fn get_uniforms<'b>(&'b self, player: Player, object: &GameObject, texture: &'b Texture2d, buffer: &'b UniformBuffer<LightsBlock>) -> impl Uniforms + 'b {
         let view = player.view_matrix();
 
-        let lights_used = 1;
-
+        let lights_used = 5;
 
         uniform! {
             perspective: player.get_perspective(),

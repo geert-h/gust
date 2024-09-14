@@ -12,7 +12,7 @@ impl TransformComponent {
     pub fn get_transform_matrix(&self) -> Mat4 {
         Mat4::identity()
             .translate(self.position)
-            .scale(self.scale)
             .rotate_with_dir_and_up(self.forward, self.up)
+            .scale(self.scale)
     }
 }

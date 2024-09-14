@@ -42,6 +42,7 @@ impl PlayerUpdateSystem {
         if vertical_angle - delta_y > Self::MAX_VERTICAL_ANGLE || vertical_angle - delta_y < Self::MIN_VERTICAL_ANGLE {
             new_direction = rotation_matrix_side.clone() * new_direction.normalize();
             player_transform.forward = new_direction;
+            return;
         }
 
         let rotation_matrix_up = Mat3::rotation_matrix(&right, delta_y);
@@ -50,7 +51,7 @@ impl PlayerUpdateSystem {
 
         new_direction.normalize();
 
-        player_transform.forward = dt.clone() * new_direction;
+        player_transform.forward = (dt.clone() * new_direction).normalize();
     }
 
     fn update_position(dt: &f32, player_transform: &mut TransformComponent, game_input: &InputHandler) {

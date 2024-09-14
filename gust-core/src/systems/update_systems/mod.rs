@@ -4,6 +4,7 @@ use crate::components::player_component::PlayerComponent;
 use crate::handlers::input_handler::InputHandler;
 
 mod player_update_system;
+mod object_rotation_system;
 
 pub struct UpdateSystem;
 
@@ -16,5 +17,8 @@ impl UpdateSystem {
             // Update the player's transform
             player_update_system::PlayerUpdateSystem::update(player, &delta_time, world, &game_input);
         }
+
+        // Update the objects
+        object_rotation_system::ObjectRotationSystem::update(world, delta_time);
     }
 }
