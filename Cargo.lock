@@ -691,11 +691,19 @@ name = "gust-core"
 version = "0.1.0"
 dependencies = [
  "glium",
+ "gust-hierarchy",
  "gust-math",
  "image",
  "sdl2",
  "smol_str",
  "winit",
+]
+
+[[package]]
+name = "gust-hierarchy"
+version = "0.1.0"
+dependencies = [
+ "gust-math",
 ]
 
 [[package]]
@@ -711,6 +719,7 @@ version = "0.1.0"
 dependencies = [
  "glium",
  "gust-core",
+ "gust-hierarchy",
  "gust-math",
  "image",
  "sdl2",

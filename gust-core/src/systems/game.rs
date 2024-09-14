@@ -1,147 +1,154 @@
+use std::f32::consts::PI;
 use std::path::Path;
-use std::rc::Rc;
 use std::time::Instant;
 
-use glium::{implement_uniform_block, Texture2d, uniform};
-use glium::uniforms::{UniformBuffer, Uniforms};
+use glium::{Display, Texture2d};
+use glium::glutin::surface::WindowSurface;
 
-use gust_math::matrices::mat4::Mat4;
-use gust_math::vectors::vect3::Vect3;
-use crate::components::floor_object::FloorObject;
-use crate::components::player::Player;
-use crate::components::viewer::Viewer;
+use gust_hierarchy::world::World;
+
+use crate::components::camera_component::CameraComponent;
+use crate::components::mesh_component::MeshComponent;
+use crate::components::player_component::PlayerComponent;
+use crate::components::texture_component::TextureComponent;
+use crate::components::transform_component::TransformComponent;
+use crate::components::velocity_component::VelocityComponent;
 use crate::handlers::event_handler::EventHandler;
 use crate::handlers::input_handler::InputHandler;
-use crate::objects::game_object::GameObject;
 use crate::objects::intermediaries::wavefront_object::WavefrontObject;
 use crate::primitives::mesh::Mesh;
-use crate::scene::scene_tree::{GameTreeObject, Node, SceneTree};
-use crate::systems::renderer::Renderer;
+use crate::storages::mesh_storage::MeshStorage;
+use crate::storages::texture_storage::TextureStorage;
+use crate::systems::render_system::RenderSystem;
+use crate::systems::update_systems::UpdateSystem;
 
 pub struct Game {
     pub t: f32,
     pub dt: f32,
-    pub objects: Vec<GameObject>,
-    pub player: Player,
-    pub game_input: InputHandler,
+    pub input_handler: InputHandler,
     pub last_frame_time: Instant,
+    pub world: World,
+    pub mesh_storage: MeshStorage,
+    pub texture_storage: TextureStorage,
 }
 
 impl Game {
     pub fn new() -> Self {
-        let objects = Self::construct_objects();
-
         Game {
             t: 0.0,
             dt: 0.0,
-            player: Player::init(),
-            game_input: InputHandler::new(),
-            objects,
+            input_handler: InputHandler::new(),
             last_frame_time: Instant::now(),
+            world: World::new(),
+            mesh_storage: MeshStorage::new(),
+            texture_storage: TextureStorage::new(),
         }
     }
 
-    fn construct_objects() -> Vec<GameObject> {
-        let mesh = Mesh::from_wavefront(WavefrontObject::parse(Path::new("./resources/assets/objects/monkey.obj")));
+    fn construct_scene(&mut self, display: &Display<WindowSurface>) -> World {
 
+        // Load the meshes
+        let monkey_mesh = Mesh::from_wavefront(WavefrontObject::parse(Path::new("./resources/assets/objects/monkey.obj")));
+        let floor_mesh = Mesh::from_wavefront(WavefrontObject::parse(Path::new("./resources/assets/objects/floor.obj")));
+
+        // Add them to the mesh storage
+        let monkey_mesh_id = self.mesh_storage.add_mesh(monkey_mesh);
+        let floor_mesh_id = self.mesh_storage.add_mesh(floor_mesh);
+
+        // Load the textures
         let image = image::load(std::io::Cursor::new(&include_bytes!("../../../resources/assets/green.png")), image::ImageFormat::Png).unwrap().to_rgba8();
+        let image = glium::texture::RawImage2d::from_raw_rgba_reversed(&image.clone().into_raw(), image.dimensions());
+        let texture = Texture2d::new(display, image).unwrap();
 
-        let object = GameObject {
-            id: 0,
-            name: "Monkey".to_string(),
-            mesh: Rc::new(mesh),
-            image: Rc::new(image),
-            object_to_parent: Mat4::identity().translate(Vect3::new(0.0, 0.0, 1.0)),
+        let floor_image = image::load(std::io::Cursor::new(&include_bytes!("../../../resources/assets/wood.jpg")), image::ImageFormat::Jpeg).unwrap().to_rgba8();
+        let floor_image = glium::texture::RawImage2d::from_raw_rgba_reversed(&floor_image.clone().into_raw(), floor_image.dimensions());
+        let floor_texture = Texture2d::new(display, floor_image).unwrap();
+
+        // Add them to the texture storage
+        let monkey_texture_id = self.texture_storage.add_texture(texture);
+        let floor_texture_id = self.texture_storage.add_texture(floor_texture);
+
+        let mut world = World::new();
+
+        // Make player entity
+        let player = world.spawn();
+        let identity_transform = TransformComponent {
+            position: [-5.0, 0.0, 1.0].into(),
+            forward: [1.0, 0.0, 0.0].into(),
+            up: [0.0, 0.0, 1.0].into(),
+            scale: [1.0, 1.0, 1.0].into(),
         };
 
-        let wavefront_object = WavefrontObject::parse(Path::new("./resources/assets/objects/floor.obj"));
-        let mesh = Mesh::from_wavefront(wavefront_object);
-        let image = image::load(std::io::Cursor::new(&include_bytes!("../../../resources/assets/wood.jpg")), image::ImageFormat::Jpeg).unwrap().to_rgba8();
+        let velocity = VelocityComponent {
+            velocity: [0.0, 0.0, 0.0].into(),
+            acceleration: [0.0, 0.0, 0.0].into(),
+        };
 
-        let floor_object = GameObject::new(0, "floor".to_string(), Rc::new(image), Rc::new(mesh), Mat4::identity());
+        let camera = CameraComponent {
+            fov: PI / 3.0,
+            aspect_ratio: 480.0 / 800.0,
+            z_near: 0.1,
+            z_far: 1024.0,
+        };
 
-        vec![object, floor_object]
-    }
+        world.add_component(player, identity_transform);
+        world.add_component(player, velocity);
+        world.add_component(player, PlayerComponent);
+        world.add_component(player, camera);
 
-    fn build_scene_tree(&self) -> SceneTree<dyn GameTreeObject> {
-        let scene_tree = SceneTree::new();
+        // Make monkey object
+        let monkey = world.spawn();
+        let monkey_transform = TransformComponent {
+            position: [0.0, 0.0, 1.0].into(),
+            forward: [1.0, 0.0, 0.0].into(),
+            up: [0.0, 0.0, 1.0].into(),
+            scale: [1.0, 1.0, 1.0].into(),
+        };
 
-        let player = Node::new(self.player.clone());
+        world.add_component(monkey, monkey_transform);
+        world.add_component(monkey, MeshComponent(monkey_mesh_id));
+        world.add_component(monkey, TextureComponent(monkey_texture_id));
 
-        let wavefront_object = WavefrontObject::parse(Path::new("./resources/assets/objects/floor.obj"));
-        let mesh = Mesh::from_wavefront(wavefront_object);
-        let image = image::load(std::io::Cursor::new(&include_bytes!("../../../resources/assets/wood.jpg")), image::ImageFormat::Jpeg).unwrap().to_rgba8();
+        // Make floor object
+        let floor = world.spawn();
+        let floor_transform = TransformComponent {
+            position: [0.0, 0.0, 0.0].into(),
+            forward: [1.0, 0.0, 0.0].into(),
+            up: [0.0, 0.0, 1.0].into(),
+            scale: [1.0, 1.0, 1.0].into(),
+        };
 
-        let floor_object = FloorObject::new(Vect3::zeros(), Vect3::new(0.0, 0.0, 1.0), Vect3::new(0.0, 1.0, 0.0), Rc::new(mesh), Rc::new(image));
+        world.add_component(floor, floor_transform);
+        world.add_component(floor, MeshComponent(floor_mesh_id));
+        world.add_component(floor, TextureComponent(floor_texture_id));
 
-        let floor = Node::new(floor_object);
+        let transform_entity = world.spawn();
+        let transform = TransformComponent {
+            position: [0.0, 0.0, 0.0].into(),
+            forward: [1.0, 0.0, 0.0].into(),
+            up: [0.0, 0.0, 1.0].into(),
+            scale: [2.0, 1.0, 1.0].into(),
+        };
 
-        scene_tree.root.
+        world.add_component(transform_entity, transform);
 
-            scene_tree.set_viewer(player);
+        world.set_parent(transform_entity, monkey);
 
-        scene_tree
-    }
-
-    pub fn load_objects(&mut self) {
-        self.objects = Self::construct_objects();
+        world
     }
 
     pub fn update(&mut self) {
-        if self.game_input.keyboard_input.is_character_pressed('r') {
-            self.player = Player::init();
-        }
-        let mut player = self.player.clone();
-        player.update(self);
-        self.player = player;
+        UpdateSystem::update(self.dt, &self.input_handler, &mut self.world);
     }
 
     pub fn run(&mut self) {
         let (event_handler, display) = EventHandler::new();
 
-        let light_positions: [[f32; 3]; 5] = [
-            [0.0, 0.0, 5.0],
-            [10.0, 10.0, 5.0],
-            [-10.0, 10.0, 5.0],
-            [10.0, -10.0, 5.0],
-            [-10.0, -10.0, 5.0],
-        ];
+        self.world = self.construct_scene(&display);
 
-        let light_colors: [[f32; 3]; 5] = [
-            [1.0, 1.0, 1.0]; 5
-        ];
+        let render_system = RenderSystem::new(display);
 
-        let buffer = UniformBuffer::new(&display, UniformBlock {
-            light_positions,
-            _padding: [0.0; 5],
-            light_colors,
-        }).unwrap();
-
-        let renderer = Renderer::new(display);
-
-        event_handler.run(self, renderer, buffer);
-    }
-
-    pub fn get_uniforms<'b>(&'b self, player: Player, object: &GameObject, texture: &'b Texture2d, buffer: &'b UniformBuffer<UniformBlock>) -> impl Uniforms + 'b {
-        let view = player.view_matrix();
-
-        let lights_used = 1;
-
-        uniform! {
-            perspective: player.get_perspective(),
-            model: object.get_model_matrix(),
-            u_texture: texture,
-            view : view,
-            lightsBlock: &*buffer,
-            u_light_count : lights_used,
-        }
+        event_handler.run(self, render_system);
     }
 }
 
-#[derive(Copy, Clone)]
-pub struct UniformBlock {
-    light_positions: [[f32; 3]; 5],
-    _padding: [f32; 5],
-    light_colors: [[f32; 3]; 5],
-}
-implement_uniform_block!(UniformBlock, light_positions, light_colors);

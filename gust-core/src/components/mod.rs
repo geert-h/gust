@@ -1,6 +1,6 @@
-pub mod player;
-pub mod camera;
-pub mod light;
-pub mod viewer;
-pub mod test_object;
-pub mod floor_object;
+pub mod transform_component;
+pub mod player_component;
+pub mod velocity_component;
+pub mod mesh_component;
+pub mod texture_component;
+pub mod camera_component;

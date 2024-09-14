@@ -1,5 +1,5 @@
 [workspace]
 resolver = "2"
 members = [
-    "runner", "gust-core", "gust-math", ]
+    "runner", "gust-core", "gust-math", "gust-hierarchy", ]
 

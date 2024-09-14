@@ -12,5 +12,6 @@ features = ["image"]
 glium = "*"
 winit = "*"
 gust-math = { path = "../gust-math" }
+gust-hierarchy = { path = "../gust-hierarchy" }
 smol_str = "0.2.2"
 image = "*"
