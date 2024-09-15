@@ -33,7 +33,7 @@ impl Mat4 {
         mat
     }
 
-    pub fn from_slices(slices: [[f32; 3]; 4]) -> Self {
+    pub fn from_slices(slices: [[f32; 4]; 4]) -> Self {
         let mut mat = Mat4::new();
         for i in 0..4 {
             for j in 0..3 {
@@ -120,30 +120,31 @@ impl Mat4 {
         mat.data[2][0] = t * x * z - s * y;
         mat.data[2][1] = t * y * z + s * x;
         mat.data[2][2] = t * z * z + c;
-        mat
+        self.clone() * mat
     }
 
+    /// Rotate the matrix to align the forward vector with the given forward vector and the up vector with the given up vector.
+    /// These rotations are based on the global forward and up vectors.
+    /// The global forward vector is [1.0, 0.0, 0.0] and the global up vector is [0.0, 0.0, 1.0].
     pub fn rotate_with_dir_and_up(&self, forward: Vect3, up: Vect3) -> Self {
-        // Standard forward is x, up is z, and right is y
-        let local_forward = Vect3::new(1.0, 0.0, 0.0);
-        let local_up = Vect3::new(0.0, 0.0, 1.0);
-        let local_right = Vect3::new(0.0, 1.0, 0.0);
+        let forward = forward.clone().normalize();
+        let right = up.cross(&forward).normalize();
+        let up = forward.cross(&right).normalize();
 
-        let f = forward.clone().normalize();
-        let u = up.clone().normalize();
-        let r = u.cross(&f).normalize();
+        let mat = Mat4::from_cols(right.into(), forward.into(), up.into(), [0.0, 0.0, 0.0, 1.0].into());
 
-        let mut mat = Mat4::identity();
-        mat.data[0][0] = r.dot(&local_right);
-        mat.data[0][1] = r.dot(&local_up);
-        mat.data[0][2] = r.dot(&local_forward);
-        mat.data[1][0] = u.dot(&local_forward);
-        mat.data[1][1] = u.dot(&local_up);
-        mat.data[1][2] = u.dot(&local_forward);
-        mat.data[2][0] = f.dot(&local_right);
-        mat.data[2][1] = f.dot(&local_up);
-        mat.data[2][2] = f.dot(&local_forward);
         self.clone() * mat
+    }
+
+    pub fn from_cols(col1: Vect4, col2: Vect4, col3: Vect4, col4: Vect4) -> Self {
+        let mut mat = Mat4::new();
+        for i in 0..4 {
+            mat.data[i][0] = col1[i];
+            mat.data[i][1] = col2[i];
+            mat.data[i][2] = col3[i];
+            mat.data[i][3] = col4[i];
+        }
+        mat
     }
 
     pub fn dot(&self, other: &Mat4) -> Self {

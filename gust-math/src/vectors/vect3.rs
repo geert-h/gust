@@ -72,6 +72,14 @@ impl Vect3 {
     pub fn to_vect4(&self, value: f32) -> Vect4 {
         Vect4::from_slice(&[self.x, self.y, self.z, value])
     }
+
+    pub fn angle(&self, other: &Vect3) -> f32 {
+        let dot = self.dot(other);
+        let norm_self = self.norm();
+        let norm_other = other.norm();
+        let cos_theta = dot / (norm_self * norm_other);
+        cos_theta.acos()
+    }
 }
 
 impl Clone for Vect3 {
@@ -192,6 +200,26 @@ impl From<[f32; 3]> for Vect3 {
             x: data[0],
             y: data[1],
             z: data[2],
+        }
+    }
+}
+
+impl From<(f32, f32, f32)> for Vect3 {
+    fn from(data: (f32, f32, f32)) -> Vect3 {
+        Vect3 {
+            x: data.0,
+            y: data.1,
+            z: data.2,
+        }
+    }
+}
+
+impl From<Vect4> for Vect3 {
+    fn from(vect4: Vect4) -> Vect3 {
+        Vect3 {
+            x: vect4.x,
+            y: vect4.y,
+            z: vect4.z,
         }
     }
 }

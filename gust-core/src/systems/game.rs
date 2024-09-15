@@ -72,12 +72,7 @@ impl Game {
 
         // Make player entity
         let player = world.spawn();
-        let identity_transform = TransformComponent {
-            position: [-5.0, 0.0, 1.0].into(),
-            forward: [1.0, 0.0, 0.0].into(),
-            up: [0.0, 0.0, 1.0].into(),
-            scale: [1.0, 1.0, 1.0].into(),
-        };
+        let identity_transform = TransformComponent::default().with_position([-5.0, 0.0, 1.0].into());
 
         let velocity = VelocityComponent {
             velocity: [0.0, 0.0, 0.0].into(),
@@ -98,12 +93,8 @@ impl Game {
 
         // Make monkey object
         let monkey = world.spawn();
-        let monkey_transform = TransformComponent {
-            position: [0.0, 0.0, 1.0].into(),
-            forward: [1.0, 0.0, 0.0].into(),
-            up: [0.0, 0.0, 1.0].into(),
-            scale: [1.0, 1.0, 1.0].into(),
-        };
+        let monkey_transform = TransformComponent::default()
+            .with_position([0.0, 0.0, 1.0].into());
 
         world.add_component(monkey, monkey_transform);
         world.add_component(monkey, MeshComponent(monkey_mesh_id));
@@ -111,24 +102,14 @@ impl Game {
 
         // Make floor object
         let floor = world.spawn();
-        let floor_transform = TransformComponent {
-            position: [0.0, 0.0, 0.0].into(),
-            forward: [1.0, 0.0, 0.0].into(),
-            up: [0.0, 0.0, 1.0].into(),
-            scale: [1.0, 1.0, 1.0].into(),
-        };
+        let floor_transform = TransformComponent::default();
 
         world.add_component(floor, floor_transform);
         world.add_component(floor, MeshComponent(floor_mesh_id));
         world.add_component(floor, TextureComponent(floor_texture_id));
 
         let transform_entity = world.spawn();
-        let transform = TransformComponent {
-            position: [0.0, 0.0, 0.0].into(),
-            forward: [1.0, 0.0, 0.0].into(),
-            up: [0.0, 0.0, 1.0].into(),
-            scale: [2.0, 1.0, 1.0].into(),
-        };
+        let transform = TransformComponent::default().with_scale([2.0, 1.0, 1.0].into());
 
         world.add_component(transform_entity, transform);
 

@@ -20,9 +20,9 @@ impl ObjectRotationSystem {
 
             let transform = world.get_component_mut::<TransformComponent>(entity).unwrap();
 
-            // rotate the forward vector around the up vector
-            let rotation_matrix = Mat3::rotation_matrix(&transform.up, 0.1 * dt);
-            transform.forward = rotation_matrix * transform.forward;
+            // // rotate the forward vector around the up vector
+            let rotation_matrix = Mat3::rotation_matrix(&transform.forward, 0.1 * dt);
+            transform.up = rotation_matrix * transform.up;
         }
     }
 }

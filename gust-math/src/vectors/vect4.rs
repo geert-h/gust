@@ -1,4 +1,5 @@
 use std::ops::{Index, IndexMut};
+use crate::vectors::vect3::Vect3;
 
 pub struct Vect4 {
     pub x: f32,
@@ -130,6 +131,39 @@ impl IndexMut<usize> for Vect4 {
             2 => &mut self.z,
             3 => &mut self.w,
             _ => panic!("Index out of bounds"),
+        }
+    }
+}
+
+impl From<[f32; 4]> for Vect4 {
+    fn from(slice: [f32; 4]) -> Vect4 {
+        Vect4 {
+            x: slice[0],
+            y: slice[1],
+            z: slice[2],
+            w: slice[3],
+        }
+    }
+}
+
+impl From<(f32, f32, f32, f32)> for Vect4 {
+    fn from(data: (f32, f32, f32, f32)) -> Vect4 {
+        Vect4 {
+            x: data.0,
+            y: data.1,
+            z: data.2,
+            w: data.3,
+        }
+    }
+}
+
+impl From<Vect3> for Vect4 {
+    fn from(vect3: Vect3) -> Vect4 {
+        Vect4 {
+            x: vect3.x,
+            y: vect3.y,
+            z: vect3.z,
+            w: 0.0,
         }
     }
 }

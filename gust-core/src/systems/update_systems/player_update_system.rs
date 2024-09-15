@@ -64,11 +64,11 @@ impl PlayerUpdateSystem {
         let mut cumulative_vector = Vect3::from_slice(&[0.0, 0.0, 0.0]);
 
         if game_input.keyboard_input.is_character_pressed('w') {
-            cumulative_vector = cumulative_vector + horizontal.clone();
+            cumulative_vector = cumulative_vector + horizontal;
         }
 
         if game_input.keyboard_input.is_character_pressed('s') {
-            cumulative_vector = cumulative_vector - horizontal.clone();
+            cumulative_vector = cumulative_vector - horizontal;
         }
 
         if game_input.keyboard_input.is_character_pressed('a') {
