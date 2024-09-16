@@ -100,11 +100,38 @@ impl World {
         self.scene_tree.set_parent(parent, child);
     }
 
-    pub fn query<T: 'static>(&mut self) -> Vec<Entity> {
+    pub fn query<T: 'static>(&self) -> Vec<(Entity, &T)> {
         self.entities
             .iter()
-            .filter(|entity| self.has_component::<T>(**entity))
-            .copied()
+            .filter_map(|&entity| {
+                self.get_component::<T>(entity)
+                    .map(|component| (entity, component))
+            })
+            .collect()
+    }
+
+    // pub fn query_mut<T: 'static>(&mut self) -> impl Iterator<Item=(Entity, &mut T)> + '_ {
+    //     // Collect entities into a vector to avoid borrowing `self` during iteration
+    //     let entities: Vec<Entity> = self.entities.iter().copied().collect();
+    //
+    //     // Split `self` to avoid conflicting borrows
+    //     let component_storage = &mut self.component_storage;
+    //
+    //     entities.into_iter().filter_map(move |entity| {
+    //         component_storage
+    //             .get_component_mut::<T>(entity)
+    //             .map(move |component| (entity, component))
+    //     })
+    // }
+
+    pub fn query_two<T: 'static, U: 'static>(&self) -> Vec<(Entity, &T, &U)> {
+        self.entities
+            .iter()
+            .filter_map(|&entity| {
+                let component1 = self.get_component::<T>(entity)?;
+                let component2 = self.get_component::<U>(entity)?;
+                Some((entity, component1, component2))
+            })
             .collect()
     }
 

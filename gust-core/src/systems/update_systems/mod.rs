@@ -5,6 +5,7 @@ use crate::handlers::input_handler::InputHandler;
 
 mod player_update_system;
 mod object_rotation_system;
+mod velocity_update_system;
 
 pub struct UpdateSystem;
 

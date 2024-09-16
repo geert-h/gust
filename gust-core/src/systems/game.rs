@@ -75,8 +75,7 @@ impl Game {
         let identity_transform = TransformComponent::default().with_position([-5.0, 0.0, 1.0].into());
 
         let velocity = VelocityComponent {
-            velocity: [0.0, 0.0, 0.0].into(),
-            acceleration: [0.0, 0.0, 0.0].into(),
+            velocity: [1.0, 0.0, 0.0].into(),
         };
 
         let camera = CameraComponent {
@@ -94,7 +93,7 @@ impl Game {
         // Make monkey object
         let monkey = world.spawn();
         let monkey_transform = TransformComponent::default()
-            .with_position([0.0, 0.0, 1.0].into());
+            .with_position([0.0, 0.0, 8.0].into());
 
         world.add_component(monkey, monkey_transform);
         world.add_component(monkey, MeshComponent(monkey_mesh_id));
@@ -109,7 +108,7 @@ impl Game {
         world.add_component(floor, TextureComponent(floor_texture_id));
 
         let transform_entity = world.spawn();
-        let transform = TransformComponent::default().with_scale([2.0, 1.0, 1.0].into());
+        let transform = TransformComponent::default().with_scale([2.0, 1.0, 5.0].into());
 
         world.add_component(transform_entity, transform);
 
