@@ -86,7 +86,7 @@ impl Game {
         };
 
         world.add_component(player, identity_transform);
-        world.add_component(player, velocity);
+        world.add_component(player, velocity.clone());
         world.add_component(player, PlayerComponent);
         world.add_component(player, camera);
 
@@ -98,6 +98,7 @@ impl Game {
         world.add_component(monkey, monkey_transform);
         world.add_component(monkey, MeshComponent(monkey_mesh_id));
         world.add_component(monkey, TextureComponent(monkey_texture_id));
+        world.add_component(monkey, velocity);
 
         // Make floor object
         let floor = world.spawn();

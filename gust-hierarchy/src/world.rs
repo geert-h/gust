@@ -1,3 +1,4 @@
+use std::any::TypeId;
 use std::collections::HashSet;
 
 use crate::component_storage::ComponentStorage;
@@ -100,42 +101,104 @@ impl World {
         self.scene_tree.set_parent(parent, child);
     }
 
-    pub fn query<T: 'static>(&self) -> Vec<(Entity, &T)> {
+    pub fn query<T: 'static>(&self) -> impl Iterator<Item=(Entity, &T)> + '_ {
         self.entities
             .iter()
-            .filter_map(|&entity| {
+            .filter_map(move |&entity| {
                 self.get_component::<T>(entity)
                     .map(|component| (entity, component))
             })
-            .collect()
     }
 
-    // pub fn query_mut<T: 'static>(&mut self) -> impl Iterator<Item=(Entity, &mut T)> + '_ {
-    //     // Collect entities into a vector to avoid borrowing `self` during iteration
-    //     let entities: Vec<Entity> = self.entities.iter().copied().collect();
-    //
-    //     // Split `self` to avoid conflicting borrows
-    //     let component_storage = &mut self.component_storage;
-    //
-    //     entities.into_iter().filter_map(move |entity| {
-    //         component_storage
-    //             .get_component_mut::<T>(entity)
-    //             .map(move |component| (entity, component))
-    //     })
-    // }
-
-    pub fn query_two<T: 'static, U: 'static>(&self) -> Vec<(Entity, &T, &U)> {
+    pub fn query2<T: 'static, U: 'static>(&self) -> impl Iterator<Item=(Entity, (&T, &U))> + '_ {
         self.entities
             .iter()
-            .filter_map(|&entity| {
+            .filter_map(move |&entity| {
                 let component1 = self.get_component::<T>(entity)?;
                 let component2 = self.get_component::<U>(entity)?;
-                Some((entity, component1, component2))
+                Some((entity, (component1, component2)))
             })
-            .collect()
     }
 
-    pub fn query_one<T: 'static>(&self) -> Option<Entity> {
+    pub fn query_mut<T: 'static>(&mut self) -> impl Iterator<Item=(Entity, &mut T)> + '_ {
+        let mut components = &mut self.component_storage.components;
+
+        // Use `iter_mut` to get mutable references to the component vectors
+        components.iter_mut().filter_map(|(&entity, components_vec)| {
+            // Find a mutable reference to the component of type T
+            components_vec
+                .iter_mut()
+                .find_map(|component_box| component_box.downcast_mut::<T>())
+                .map(|component| (entity, component))
+        })
+    }
+
+    pub fn query_mut2<A: 'static, B: 'static>(
+        &mut self,
+    ) -> impl Iterator<Item=(Entity, (&mut A, &mut B))> + '_ {
+        let components = &mut self.component_storage.components;
+
+        components.iter_mut().filter_map(|(&entity, components_vec)| {
+            // If A and B are the same type, we cannot have two mutable references to the same component
+            if TypeId::of::<A>() == TypeId::of::<B>() {
+                return None;
+            }
+
+            // Initialize mutable references to None
+            let mut index_a: Option<usize> = None;
+            let mut index_b: Option<usize> = None;
+
+            // Collect indices of components in one iteration
+            for (index, component_box) in components_vec.iter_mut().enumerate() {
+                let type_id = component_box.type_id();
+
+                if index_a.is_none() && type_id == TypeId::of::<A>() {
+                    index_a = Some(index);
+                }
+
+                if index_b.is_none() && type_id == TypeId::of::<B>() {
+                    index_b = Some(index);
+                }
+
+                if index_a.is_some() && index_b.is_some() {
+                    break;
+                }
+            }
+
+            // If both components are found
+            if let (Some(index_a), Some(index_b)) = (index_a, index_b) {
+                // Ensure indices are different to avoid aliasing mutable references
+                if index_a != index_b {
+                    // Use safe function to get mutable references to different indices
+                    if let Some((comp_a_box, comp_b_box)) = Self::get_two_mut(components_vec, index_a, index_b) {
+                        let component_a = comp_a_box.downcast_mut::<A>().unwrap();
+                        let component_b = comp_b_box.downcast_mut::<B>().unwrap();
+                        return Some((entity, (component_a, component_b)));
+                    }
+                }
+            }
+
+            None
+        })
+    }
+
+    fn get_two_mut<T>(
+        slice: &mut [T],
+        idx1: usize,
+        idx2: usize,
+    ) -> Option<(&mut T, &mut T)> {
+        if idx1 == idx2 {
+            None
+        } else if idx1 < idx2 {
+            let (left, right) = slice.split_at_mut(idx2);
+            Some((&mut left[idx1], &mut right[0]))
+        } else {
+            let (left, right) = slice.split_at_mut(idx1);
+            Some((&mut right[0], &mut left[idx2]))
+        }
+    }
+
+    pub fn query_one_entity<T: 'static>(&self) -> Option<Entity> {
         self.entities
             .iter()
             .find(|entity| self.has_component::<T>(**entity))
@@ -266,7 +329,7 @@ mod tests {
         let velocity = Velocity { speed: 1.0 };
         world.add_component(entity2, velocity);
 
-        let entity = world.query_one::<Velocity>();
+        let entity = world.query_one_entity::<Velocity>();
         assert_eq!(entity, Some(entity2));
     }
 

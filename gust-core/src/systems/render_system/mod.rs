@@ -60,7 +60,7 @@ impl RenderSystem {
         let mut target = self.display.draw();
         target.clear_color_and_depth((0.0, 0.0, 0.0, 1.0), 1.0);
 
-        let player = game.world.query_one::<PlayerComponent>().unwrap();
+        let player = game.world.query_one_entity::<PlayerComponent>().unwrap();
         let player_transform = game.world.get_component::<TransformComponent>(player).unwrap();
         let player_camera = game.world.get_component::<CameraComponent>(player).unwrap();
         let player_view = player_camera.view_matrix(player_transform.position, player_transform.forward, player_transform.up);

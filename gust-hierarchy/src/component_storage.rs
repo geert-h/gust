@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use crate::entity::Entity;
 
 pub struct ComponentStorage {
-    components: HashMap<Entity, Vec<Box<dyn Any>>>,
+    pub components: HashMap<Entity, Vec<Box<dyn Any>>>,
 }
 
 impl ComponentStorage {
