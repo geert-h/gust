@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
-use crate::entity::Entity;
+use gust_core::entity::Entity;
+
 use crate::node::Node;
 
 #[derive(Debug)]

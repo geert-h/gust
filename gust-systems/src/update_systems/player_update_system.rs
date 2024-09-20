@@ -1,12 +1,11 @@
 use winit::keyboard::{Key, NamedKey};
 
-use gust_hierarchy::entity::Entity;
+use gust_components::components::transform_component::TransformComponent;
+use gust_core::entity::Entity;
+use gust_core::handlers::input_handler::InputHandler;
 use gust_hierarchy::world::World;
 use gust_math::matrices::mat3::Mat3;
 use gust_math::vectors::vect3::Vect3;
-
-use crate::components::transform_component::TransformComponent;
-use crate::handlers::input_handler::InputHandler;
 
 pub struct PlayerUpdateSystem;
 

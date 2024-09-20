@@ -1,8 +1,9 @@
 use std::any::TypeId;
 use std::collections::HashSet;
 
+use gust_core::entity::Entity;
+
 use crate::component_storage::ComponentStorage;
-use crate::entity::Entity;
 use crate::scene_tree::SceneTree;
 
 /// The World struct is the main struct that holds all the entities and components.
@@ -21,7 +22,7 @@ use crate::scene_tree::SceneTree;
 /// }
 ///
 /// use gust_hierarchy::world::World;
-/// use gust_hierarchy::entity::Entity;
+/// use gust_core::entity::Entity;
 ///
 /// let mut world = World::new();
 /// let entity = world.create_entity();

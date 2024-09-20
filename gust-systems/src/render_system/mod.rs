@@ -3,19 +3,19 @@ use glium::DrawParameters;
 use glium::glutin::surface::WindowSurface;
 use glium::uniforms::{UniformBuffer, Uniforms};
 
-use gust_hierarchy::entity::Entity;
+use gust_components::components::camera_component::CameraComponent;
+use gust_components::components::mesh_component::MeshComponent;
+use gust_components::components::player_component::PlayerComponent;
+use gust_components::components::texture_component::TextureComponent;
+use gust_components::components::transform_component::TransformComponent;
+use gust_core::entity::Entity;
+use gust_core::primitives::lights_block::LightsBlock;
+use gust_core::primitives::mesh::Mesh;
+use gust_core::primitives::vertex::Vertex;
 use gust_hierarchy::world::World;
 use gust_math::matrices::mat4::Mat4;
 
-use crate::components::camera_component::CameraComponent;
-use crate::components::mesh_component::MeshComponent;
-use crate::components::player_component::PlayerComponent;
-use crate::components::texture_component::TextureComponent;
-use crate::components::transform_component::TransformComponent;
-use crate::primitives::lights_block::LightsBlock;
-use crate::primitives::mesh::Mesh;
-use crate::primitives::vertex::Vertex;
-use crate::systems::game::Game;
+use crate::game::Game;
 
 pub struct RenderSystem {
     pub display: Display<WindowSurface>,
@@ -25,8 +25,8 @@ pub struct RenderSystem {
 
 impl RenderSystem {
     pub fn new(display: Display<WindowSurface>) -> Self {
-        let vert_shader_string = include_str!("../../../../resources/shaders/vert.glsl");
-        let frac_shader_string = include_str!("../../../../resources/shaders/frac.glsl");
+        let vert_shader_string = include_str!("../../../resources/shaders/vert.glsl");
+        let frac_shader_string = include_str!("../../../resources/shaders/frac.glsl");
 
         let program = Program::from_source(
             &display,

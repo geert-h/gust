@@ -1,7 +1,6 @@
+use gust_components::components::transform_component::TransformComponent;
+use gust_components::components::velocity_component::VelocityComponent;
 use gust_hierarchy::world::World;
-
-use crate::components::transform_component::TransformComponent;
-use crate::components::velocity_component::VelocityComponent;
 
 pub struct VelocityUpdateSystem;
 

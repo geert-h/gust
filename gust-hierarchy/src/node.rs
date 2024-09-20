@@ -1,4 +1,4 @@
-﻿use crate::entity::Entity;
+﻿use gust_core::entity::Entity;
 
 #[derive(Debug)]
 pub struct Node {

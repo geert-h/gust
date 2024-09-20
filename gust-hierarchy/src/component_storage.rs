@@ -1,7 +1,7 @@
 use std::any::Any;
 use std::collections::HashMap;
 
-use crate::entity::Entity;
+use gust_core::entity::Entity;
 
 pub struct ComponentStorage {
     pub components: HashMap<Entity, Vec<Box<dyn Any>>>,
@@ -40,8 +40,9 @@ impl ComponentStorage {
 
 #[cfg(test)]
 mod tests {
+    use gust_core::entity::Entity;
+
     use crate::component_storage::ComponentStorage;
-    use crate::entity::Entity;
 
     #[derive(Debug, Clone, PartialEq)]
     struct Transform {

@@ -1,7 +1,6 @@
+use gust_components::components::player_component::PlayerComponent;
+use gust_core::handlers::input_handler::InputHandler;
 use gust_hierarchy::world::World;
-
-use crate::components::player_component::PlayerComponent;
-use crate::handlers::input_handler::InputHandler;
 
 mod player_update_system;
 mod object_rotation_system;

@@ -1,9 +1,10 @@
 [package]
-name = "gust-runner"
+name = "gust-components"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-gust-systems = { path = "../gust-systems" }
+gust-core = { path = "../gust-core" }
+gust-math = { path = "../gust-math" }

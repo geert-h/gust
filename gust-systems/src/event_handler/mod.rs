@@ -8,7 +8,8 @@ use winit::event::Event::WindowEvent;
 use winit::event::KeyEvent;
 use winit::window::{CursorGrabMode, Window};
 
-use crate::primitives::lights_block::LightsBlock;
+use gust_core::primitives::lights_block::LightsBlock;
+
 use crate::systems::game::Game;
 use crate::systems::render_system::RenderSystem;
 

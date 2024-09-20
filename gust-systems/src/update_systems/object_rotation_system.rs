@@ -1,9 +1,8 @@
+use gust_components::components::mesh_component::MeshComponent;
+use gust_components::components::player_component::PlayerComponent;
+use gust_components::components::transform_component::TransformComponent;
 use gust_hierarchy::world::World;
 use gust_math::matrices::mat3::Mat3;
-
-use crate::components::mesh_component::MeshComponent;
-use crate::components::player_component::PlayerComponent;
-use crate::components::transform_component::TransformComponent;
 
 pub struct ObjectRotationSystem;
 

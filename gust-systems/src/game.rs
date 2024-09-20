@@ -5,22 +5,20 @@ use std::time::Instant;
 use glium::{Display, Texture2d};
 use glium::glutin::surface::WindowSurface;
 
+use gust_components::Component::{MeshComponent, PlayerComponent, TextureComponent};
+use gust_components::components::camera_component::CameraComponent;
+use gust_components::components::transform_component::TransformComponent;
+use gust_components::components::velocity_component::VelocityComponent;
+use gust_core::handlers::input_handler::InputHandler;
+use gust_core::objects::intermediaries::wavefront_object::WavefrontObject;
+use gust_core::primitives::mesh::Mesh;
+use gust_core::storages::mesh_storage::MeshStorage;
+use gust_core::storages::texture_storage::TextureStorage;
 use gust_hierarchy::world::World;
 
-use crate::components::camera_component::CameraComponent;
-use crate::components::mesh_component::MeshComponent;
-use crate::components::player_component::PlayerComponent;
-use crate::components::texture_component::TextureComponent;
-use crate::components::transform_component::TransformComponent;
-use crate::components::velocity_component::VelocityComponent;
-use crate::handlers::event_handler::EventHandler;
-use crate::handlers::input_handler::InputHandler;
-use crate::objects::intermediaries::wavefront_object::WavefrontObject;
-use crate::primitives::mesh::Mesh;
-use crate::storages::mesh_storage::MeshStorage;
-use crate::storages::texture_storage::TextureStorage;
-use crate::systems::render_system::RenderSystem;
-use crate::systems::update_systems::UpdateSystem;
+use crate::event_handler::EventHandler;
+use crate::render_system::RenderSystem;
+use crate::update_systems::UpdateSystem;
 
 pub struct Game {
     pub t: f32,
@@ -48,19 +46,19 @@ impl Game {
     fn construct_scene(&mut self, display: &Display<WindowSurface>) -> World {
 
         // Load the meshes
-        let monkey_mesh = Mesh::from_wavefront(WavefrontObject::parse(Path::new("./resources/assets/objects/monkey.obj")));
-        let floor_mesh = Mesh::from_wavefront(WavefrontObject::parse(Path::new("./resources/assets/objects/floor.obj")));
+        let monkey_mesh = Mesh::from_wavefront(WavefrontObject::parse(Path::new("../../resources/assets/objects/monkey.obj")));
+        let floor_mesh = Mesh::from_wavefront(WavefrontObject::parse(Path::new("../../resources/assets/objects/floor.obj")));
 
         // Add them to the mesh storage
         let monkey_mesh_id = self.mesh_storage.add_mesh(monkey_mesh);
         let floor_mesh_id = self.mesh_storage.add_mesh(floor_mesh);
 
         // Load the textures
-        let image = image::load(std::io::Cursor::new(&include_bytes!("../../../resources/assets/green.png")), image::ImageFormat::Png).unwrap().to_rgba8();
+        let image = image::load(std::io::Cursor::new(&include_bytes!("../../resources/assets/green.png")), image::ImageFormat::Png).unwrap().to_rgba8();
         let image = glium::texture::RawImage2d::from_raw_rgba_reversed(&image.clone().into_raw(), image.dimensions());
         let texture = Texture2d::new(display, image).unwrap();
 
-        let floor_image = image::load(std::io::Cursor::new(&include_bytes!("../../../resources/assets/wood.jpg")), image::ImageFormat::Jpeg).unwrap().to_rgba8();
+        let floor_image = image::load(std::io::Cursor::new(&include_bytes!("../../resources/assets/wood.jpg")), image::ImageFormat::Jpeg).unwrap().to_rgba8();
         let floor_image = glium::texture::RawImage2d::from_raw_rgba_reversed(&floor_image.clone().into_raw(), floor_image.dimensions());
         let floor_texture = Texture2d::new(display, floor_image).unwrap();
 

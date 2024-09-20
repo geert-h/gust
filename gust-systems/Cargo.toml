@@ -1,0 +1,21 @@
+[package]
+name = "gust-systems"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies.sdl2]
+version = "0.36.0"
+default-features = false
+features = ["image"]
+
+[dependencies]
+glium = "*"
+winit = "*"
+gust-core = { path = "../gust-core" }
+gust-math = { path = "../gust-math" }
+gust-components = { path = "../gust-components" }
+gust-hierarchy = { path = "../gust-hierarchy" }
+smol_str = "0.2.2"
+image = "*"
