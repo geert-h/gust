@@ -10,8 +10,8 @@ use winit::window::{CursorGrabMode, Window};
 
 use gust_core::primitives::lights_block::LightsBlock;
 
-use crate::systems::game::Game;
-use crate::systems::render_system::RenderSystem;
+use crate::game::Game;
+use crate::render_system::RenderSystem;
 
 pub struct EventHandler {
     event_loop: winit::event_loop::EventLoop<()>,

@@ -1,4 +1,4 @@
-use gust_systems::systems::game::Game;
+use gust_systems::game::Game;
 
 fn main() {
     Game::new().run();

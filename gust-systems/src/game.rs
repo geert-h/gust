@@ -94,8 +94,8 @@ impl Game {
             .with_position([0.0, 0.0, 8.0].into());
 
         world.add_component(monkey, monkey_transform);
-        world.add_component(monkey, MeshComponent(monkey_mesh_id));
-        world.add_component(monkey, TextureComponent(monkey_texture_id));
+        world.add_component(monkey, MeshComponent(gust_components::components::mesh_component::MeshComponent(monkey_mesh_id)));
+        world.add_component(monkey, TextureComponent(gust_components::components::texture_component::TextureComponent(monkey_texture_id)));
         world.add_component(monkey, velocity);
 
         // Make floor object
@@ -103,8 +103,8 @@ impl Game {
         let floor_transform = TransformComponent::default();
 
         world.add_component(floor, floor_transform);
-        world.add_component(floor, MeshComponent(floor_mesh_id));
-        world.add_component(floor, TextureComponent(floor_texture_id));
+        world.add_component(floor, MeshComponent(gust_components::components::mesh_component::MeshComponent(floor_mesh_id)));
+        world.add_component(floor, TextureComponent(gust_components::components::texture_component::TextureComponent(floor_texture_id)));
 
         let transform_entity = world.spawn();
         let transform = TransformComponent::default().with_scale([2.0, 1.0, 5.0].into());

@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 gust-math = { path = "../gust-math" }
 gust-core = { path = "../gust-core" }
+gust-components = { path = "../gust-components" }

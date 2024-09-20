@@ -9,8 +9,8 @@ default-features = false
 features = ["image"]
 
 [dependencies]
-glium = "*"
-winit = "*"
+glium = "0.35.0"
+winit = "0.30.5"
 gust-math = { path = "../gust-math" }
 smol_str = "0.2.2"
 image = "*"

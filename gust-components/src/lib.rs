@@ -5,7 +5,7 @@ use crate::components::texture_component::TextureComponent;
 use crate::components::transform_component::TransformComponent;
 use crate::components::velocity_component::VelocityComponent;
 
-mod component_storage;
+pub mod component_storage;
 pub mod components;
 
 pub enum Component {
