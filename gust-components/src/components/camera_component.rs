@@ -1,15 +1,15 @@
 use gust_math::vectors::vect3::Vect3;
 
-pub struct CameraComponent {
+pub struct CameraComponentImpl {
     pub fov: f32,
     pub z_near: f32,
     pub z_far: f32,
     pub aspect_ratio: f32,
 }
 
-impl CameraComponent {
+impl CameraComponentImpl {
     pub fn new(fov: f32, z_near: f32, z_far: f32, aspect_ratio: f32) -> Self {
-        CameraComponent {
+        CameraComponentImpl {
             fov,
             z_near,
             z_far,

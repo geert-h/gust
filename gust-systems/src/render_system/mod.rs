@@ -3,11 +3,9 @@ use glium::DrawParameters;
 use glium::glutin::surface::WindowSurface;
 use glium::uniforms::{UniformBuffer, Uniforms};
 
-use gust_components::components::camera_component::CameraComponent;
-use gust_components::components::mesh_component::MeshComponent;
-use gust_components::components::player_component::PlayerComponent;
-use gust_components::components::texture_component::TextureComponent;
-use gust_components::components::transform_component::TransformComponent;
+use gust_components::Component;
+use gust_components::Component::{CameraComponent, MeshComponent, TextureComponent, TransformComponent};
+use gust_components::ComponentType::{CameraComponentType, MeshComponentType, PlayerComponentType, TextureComponentType, TransformComponentType};
 use gust_core::entity::Entity;
 use gust_core::primitives::lights_block::LightsBlock;
 use gust_core::primitives::mesh::Mesh;
@@ -60,28 +58,27 @@ impl RenderSystem {
         let mut target = self.display.draw();
         target.clear_color_and_depth((0.0, 0.0, 0.0, 1.0), 1.0);
 
-        let player = game.world.query_one_entity::<PlayerComponent>().unwrap();
-        let player_transform = game.world.get_component::<TransformComponent>(player).unwrap();
-        let player_camera = game.world.get_component::<CameraComponent>(player).unwrap();
+        let player = game.world.query_one(PlayerComponentType).collect::<Vec<(Entity, &Component)>>().iter().map(|(entity, _component)| *entity).collect::<Vec<Entity>>()[0];
+        let TransformComponent(player_transform) = game.world.get_component(player, TransformComponentType).unwrap() else { return; };
+        let CameraComponent(player_camera) = game.world.get_component(player, CameraComponentType).unwrap() else { return; };
         let player_view = player_camera.view_matrix(player_transform.position, player_transform.forward, player_transform.up);
         let player_perspective = player_camera.get_perspective();
 
         // Render each item in game.world
         for entity in game.world.entities.iter() {
-            if game.world.has_component::<PlayerComponent>(*entity)
-                || !game.world.has_component::<TransformComponent>(*entity)
-                || !game.world.has_component::<MeshComponent>(*entity)
-                || !game.world.has_component::<TextureComponent>(*entity)
-                || !game.world.has_component::<MeshComponent>(*entity) {
+            if game.world.has_component(*entity, PlayerComponentType)
+                || !game.world.has_component(*entity, TransformComponentType)
+                || !game.world.has_component(*entity, MeshComponentType)
+                || !game.world.has_component(*entity, TextureComponentType) {
                 continue;
             }
 
-            let object_transform_id = game.world.get_component::<TransformComponent>(*entity).unwrap();
-            let mesh_id = game.world.get_component::<MeshComponent>(*entity).unwrap();
-            let texture_id = game.world.get_component::<TextureComponent>(*entity).unwrap();
+            let TransformComponent(object_transform) = game.world.get_component(*entity, TransformComponentType).unwrap() else { continue; };
+            let MeshComponent(mesh_id) = game.world.get_component(*entity, MeshComponentType).unwrap() else { continue; };
+            let TextureComponent(texture_id) = game.world.get_component(*entity, TextureComponentType).unwrap() else { continue; };
 
-            let object_transform = object_transform_id.get_transform_matrix();
-            let object_transform = self.propagate_transform(*entity, object_transform, &game.world).to_slices();
+            let object_transform_matrix = object_transform.get_transform_matrix();
+            let object_transform = self.propagate_transform(*entity, object_transform_matrix, &game.world).to_slices();
             let mesh = game.mesh_storage.get_mesh(mesh_id.0).unwrap();
             let texture = game.texture_storage.get_texture(texture_id.0).unwrap();
 
@@ -136,14 +133,14 @@ impl RenderSystem {
         }
 
         let parent = parent.unwrap();
-        if let None = world.get_component::<TransformComponent>(parent) {
+        if let None = world.get_component(parent, TransformComponentType) {
             // If the parent doesn't have a transform, it cannot exist in the scene
             // Hence, we return an error
             panic!("Parent entity does not have a transform component");
         }
-        let parent_transform = world.get_component::<TransformComponent>(parent).unwrap().get_transform_matrix();
+        let TransformComponent(parent_transform) = world.get_component(parent, TransformComponentType).unwrap() else { return entity_transform; };
 
-        let new_transform = parent_transform * entity_transform;
+        let new_transform = parent_transform.get_transform_matrix() * entity_transform;
 
         // Recursively propagate the transform
         self.propagate_transform(parent, new_transform, world)

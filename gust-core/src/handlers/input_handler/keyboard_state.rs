@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use winit::keyboard::Key;
+use winit::keyboard::{Key, SmolStr};
 
 pub struct KeyBoardState {
     pub pressed_keys: HashMap<Key, f32>,
@@ -12,7 +12,7 @@ impl KeyBoardState {
     }
 
     pub fn is_character_pressed(&self, key: char) -> bool {
-        self.pressed_keys.contains_key(&Key::Character(smol_str::SmolStr::from(key.to_string())))
+        self.pressed_keys.contains_key(&Key::Character(SmolStr::from(key.to_string())))
     }
 
     pub fn get_key_duration(&self, key: Key) -> Option<f32> {

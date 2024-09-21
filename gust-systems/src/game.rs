@@ -5,10 +5,11 @@ use std::time::Instant;
 use glium::{Display, Texture2d};
 use glium::glutin::surface::WindowSurface;
 
-use gust_components::Component::{MeshComponent, PlayerComponent, TextureComponent};
-use gust_components::components::camera_component::CameraComponent;
-use gust_components::components::transform_component::TransformComponent;
-use gust_components::components::velocity_component::VelocityComponent;
+use gust_components::Component::{CameraComponent, MeshComponent, PlayerComponent, TextureComponent, TransformComponent, VelocityComponent};
+use gust_components::components::camera_component::CameraComponentImpl;
+use gust_components::components::player_component::PlayerComponentImpl;
+use gust_components::components::transform_component::TransformComponentImpl;
+use gust_components::components::velocity_component::VelocityComponentImpl;
 use gust_core::handlers::input_handler::InputHandler;
 use gust_core::objects::intermediaries::wavefront_object::WavefrontObject;
 use gust_core::primitives::mesh::Mesh;
@@ -44,10 +45,9 @@ impl Game {
     }
 
     fn construct_scene(&mut self, display: &Display<WindowSurface>) -> World {
-
         // Load the meshes
-        let monkey_mesh = Mesh::from_wavefront(WavefrontObject::parse(Path::new("../../resources/assets/objects/monkey.obj")));
-        let floor_mesh = Mesh::from_wavefront(WavefrontObject::parse(Path::new("../../resources/assets/objects/floor.obj")));
+        let monkey_mesh = Mesh::from_wavefront(WavefrontObject::parse(Path::new("resources/assets/objects/monkey.obj")));
+        let floor_mesh = Mesh::from_wavefront(WavefrontObject::parse(Path::new("resources/assets/objects/floor.obj")));
 
         // Add them to the mesh storage
         let monkey_mesh_id = self.mesh_storage.add_mesh(monkey_mesh);
@@ -70,46 +70,46 @@ impl Game {
 
         // Make player entity
         let player = world.spawn();
-        let identity_transform = TransformComponent::default().with_position([-5.0, 0.0, 1.0].into());
+        let identity_transform = TransformComponentImpl::default().with_position([-5.0, 0.0, 1.0].into());
 
-        let velocity = VelocityComponent {
+        let velocity = VelocityComponentImpl {
             velocity: [1.0, 0.0, 0.0].into(),
         };
 
-        let camera = CameraComponent {
+        let camera = CameraComponentImpl {
             fov: PI / 3.0,
             aspect_ratio: 480.0 / 800.0,
             z_near: 0.1,
             z_far: 1024.0,
         };
 
-        world.add_component(player, identity_transform);
-        world.add_component(player, velocity.clone());
-        world.add_component(player, PlayerComponent);
-        world.add_component(player, camera);
+        world.add_component(player, TransformComponent(identity_transform));
+        world.add_component(player, VelocityComponent(velocity.clone()));
+        world.add_component(player, PlayerComponent(PlayerComponentImpl));
+        world.add_component(player, CameraComponent(camera));
 
         // Make monkey object
         let monkey = world.spawn();
-        let monkey_transform = TransformComponent::default()
+        let monkey_transform = TransformComponentImpl::default()
             .with_position([0.0, 0.0, 8.0].into());
 
-        world.add_component(monkey, monkey_transform);
-        world.add_component(monkey, MeshComponent(gust_components::components::mesh_component::MeshComponent(monkey_mesh_id)));
-        world.add_component(monkey, TextureComponent(gust_components::components::texture_component::TextureComponent(monkey_texture_id)));
-        world.add_component(monkey, velocity);
+        world.add_component(monkey, TransformComponent(monkey_transform));
+        world.add_component(monkey, MeshComponent(gust_components::components::mesh_component::MeshComponentImpl(monkey_mesh_id)));
+        world.add_component(monkey, TextureComponent(gust_components::components::texture_component::TextureComponentImpl(monkey_texture_id)));
+        world.add_component(monkey, VelocityComponent(velocity));
 
         // Make floor object
         let floor = world.spawn();
-        let floor_transform = TransformComponent::default();
+        let floor_transform = TransformComponentImpl::default();
 
-        world.add_component(floor, floor_transform);
-        world.add_component(floor, MeshComponent(gust_components::components::mesh_component::MeshComponent(floor_mesh_id)));
-        world.add_component(floor, TextureComponent(gust_components::components::texture_component::TextureComponent(floor_texture_id)));
+        world.add_component(floor, TransformComponent(floor_transform));
+        world.add_component(floor, MeshComponent(gust_components::components::mesh_component::MeshComponentImpl(floor_mesh_id)));
+        world.add_component(floor, TextureComponent(gust_components::components::texture_component::TextureComponentImpl(floor_texture_id)));
 
         let transform_entity = world.spawn();
-        let transform = TransformComponent::default().with_scale([2.0, 1.0, 5.0].into());
+        let transform = TransformComponentImpl::default().with_scale([2.0, 1.0, 5.0].into());
 
-        world.add_component(transform_entity, transform);
+        world.add_component(transform_entity, TransformComponent(transform));
 
         world.set_parent(transform_entity, monkey);
 

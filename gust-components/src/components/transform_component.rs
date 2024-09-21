@@ -1,16 +1,16 @@
 use gust_math::matrices::mat4::Mat4;
 use gust_math::vectors::vect3::Vect3;
 
-pub struct TransformComponent {
+pub struct TransformComponentImpl {
     pub position: Vect3,
     pub forward: Vect3,
     pub up: Vect3,
     pub scale: Vect3,
 }
 
-impl TransformComponent {
+impl TransformComponentImpl {
     pub fn default() -> Self {
-        TransformComponent {
+        TransformComponentImpl {
             position: [0.0, 0.0, 0.0].into(),
             forward: [1.0, 0.0, 0.0].into(),
             up: [0.0, 0.0, 1.0].into(),

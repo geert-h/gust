@@ -1,1 +1,1 @@
-pub struct PlayerComponent;
+pub struct PlayerComponentImpl;

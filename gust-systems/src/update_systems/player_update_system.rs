@@ -1,6 +1,8 @@
 use winit::keyboard::{Key, NamedKey};
 
-use gust_components::components::transform_component::TransformComponent;
+use gust_components::Component::TransformComponent;
+use gust_components::components::transform_component::TransformComponentImpl;
+use gust_components::ComponentType::TransformComponentType;
 use gust_core::entity::Entity;
 use gust_core::handlers::input_handler::InputHandler;
 use gust_hierarchy::world::World;
@@ -14,14 +16,14 @@ impl PlayerUpdateSystem {
     const MIN_VERTICAL_ANGLE: f32 = 0.0f32 * std::f32::consts::PI / 180.0f32;
 
     pub fn update(player_entity: Entity, dt: &f32, world: &mut World, game_input: &InputHandler) {
-        let transform = world.get_component_mut::<TransformComponent>(player_entity).unwrap();
+        let TransformComponent(transform) = world.get_component_mut(player_entity, TransformComponentType).unwrap() else { return; };
         // let mut player_velocity = world.get_component_mut::<VelocityComponent>(player_entity).unwrap();
 
         PlayerUpdateSystem::update_direction(dt, transform, game_input);
         PlayerUpdateSystem::update_position(dt, transform, game_input);
     }
 
-    fn update_direction(dt: &f32, player_transform: &mut TransformComponent, game_input: &InputHandler) {
+    fn update_direction(dt: &f32, player_transform: &mut TransformComponentImpl, game_input: &InputHandler) {
         let delta_x = game_input.mouse_input.mouse_delta.0;
         let delta_y = game_input.mouse_input.mouse_delta.1;
 
@@ -53,7 +55,7 @@ impl PlayerUpdateSystem {
         player_transform.forward = (dt.clone() * new_direction).normalize();
     }
 
-    fn update_position(dt: &f32, player_transform: &mut TransformComponent, game_input: &InputHandler) {
+    fn update_position(dt: &f32, player_transform: &mut TransformComponentImpl, game_input: &InputHandler) {
         let look_direction = player_transform.forward.clone();
         let up = player_transform.up.clone();
 

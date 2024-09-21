@@ -1,6 +1,5 @@
-use gust_components::components::mesh_component::MeshComponent;
-use gust_components::components::player_component::PlayerComponent;
-use gust_components::components::transform_component::TransformComponent;
+use gust_components::Component::TransformComponent;
+use gust_components::ComponentType::TransformComponentType;
 use gust_hierarchy::world::World;
 use gust_math::matrices::mat3::Mat3;
 
@@ -8,16 +7,10 @@ pub struct ObjectRotationSystem;
 
 impl ObjectRotationSystem {
     pub fn update(world: &mut World, dt: f32) {
-        let entities: Vec<_> = world.query::<TransformComponent>()
-            .into_iter()
-            .filter(|(entity, _)| !world.has_component::<PlayerComponent>(*entity) && world.has_component::<MeshComponent>(*entity))
-            .map(|(entity, _)| entity)
-            .collect();
-
-        for entity in entities {
-            let mut transform = world.get_component_mut::<TransformComponent>(entity).unwrap();
-            let rotation_matrix = Mat3::rotation_matrix(&transform.forward, 0.1 * dt);
-            transform.up = rotation_matrix * transform.up;
+        for (_entity, component) in world.query_one_mut(TransformComponentType) {
+            let TransformComponent(object_transform) = component else { return; };
+            let rotation_matrix = Mat3::rotation_matrix(&object_transform.forward, 0.1 * dt);
+            object_transform.up = rotation_matrix * object_transform.up;
         }
     }
 }

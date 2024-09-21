@@ -1,9 +1,9 @@
-use std::any::TypeId;
 use std::collections::HashSet;
 
+use gust_components::{Component, ComponentType};
+use gust_components::component_storage::ComponentStorage;
 use gust_core::entity::Entity;
 
-use crate::component_storage::ComponentStorage;
 use crate::scene_tree::SceneTree;
 
 /// The World struct is the main struct that holds all the entities and components.
@@ -13,30 +13,27 @@ use crate::scene_tree::SceneTree;
 /// # Example
 ///
 /// ```
-/// struct Transform {
-///    position: (f32, f32),
-/// }
-///
-/// struct Velocity {
-///   speed: f32,
-/// }
-///
+/// use gust_components::Component;
+/// use gust_components::Component::{TransformComponent, VelocityComponent};
+/// use gust_components::components::transform_component::TransformComponentImpl;
+/// use gust_components::components::velocity_component::VelocityComponentImpl;
+/// use gust_components::ComponentType::TransformComponentType;
 /// use gust_hierarchy::world::World;
 /// use gust_core::entity::Entity;
 ///
 /// let mut world = World::new();
 /// let entity = world.create_entity();
 ///
-/// let transform = Transform { position: (0.0, 0.0) };
-/// world.add_component(entity, transform);
+/// let transform = TransformComponentImpl::default();
+/// world.add_component(entity, TransformComponent(transform));
 ///
-/// let velocity = Velocity { speed: 1.0 };
-/// world.add_component(entity, velocity);
+/// let velocity = VelocityComponentImpl::default();
+/// world.add_component(entity, VelocityComponent(velocity));
 ///
-/// let transform_component = world.get_component::<Transform>(entity);
-/// assert_eq!(transform_component, Some(&transform));
+/// let transform_component = world.get_component(entity, TransformComponentType);
+/// assert_eq!(transform_component, Some(&TransformComponent(transform)));
 ///
-/// let entities = world.query::<Transform>();
+/// let entities = world.query_one(TransformComponentType).collect::<Vec<(Entity, &Component)>>().iter().map(|(entity, component)| *entity).collect::<Vec<Entity>>();
 /// assert_eq!(entities, vec![entity]);
 /// ```
 pub struct World {
@@ -79,138 +76,43 @@ impl World {
     }
 
     // Add a component to an entity
-    pub fn add_component<T: 'static>(&mut self, entity: Entity, component: T) {
+    pub fn add_component(&mut self, entity: Entity, component: Component) {
         self.component_storage.add_component(entity, component);
     }
 
     // Get a component by its type
-    pub fn get_component<T: 'static>(&self, entity: Entity) -> Option<&T> {
-        self.component_storage.get_component::<T>(entity)
+    pub fn get_component(&self, entity: Entity, component_type: ComponentType) -> Option<&Component> {
+        self.component_storage.get_component(entity, component_type)
     }
 
     // Get a mutable component by its type
-    pub fn get_component_mut<T: 'static>(&mut self, entity: Entity) -> Option<&mut T> {
-        self.component_storage.get_component_mut::<T>(entity)
+    pub fn get_component_mut(&mut self, entity: Entity, component_type: ComponentType) -> Option<&mut Component> {
+        self.component_storage.get_component_mut(entity, component_type)
     }
 
     // Check if an entity has a component
-    pub fn has_component<T: 'static>(&self, entity: Entity) -> bool {
-        self.component_storage.has_component::<T>(entity)
+    pub fn has_component(&self, entity: Entity, component_type: ComponentType) -> bool {
+        self.component_storage.has_component(entity, component_type)
     }
 
     pub fn set_parent(&mut self, parent: Entity, child: Entity) {
         self.scene_tree.set_parent(parent, child);
     }
 
-    pub fn query<T: 'static>(&self) -> impl Iterator<Item=(Entity, &T)> + '_ {
-        self.entities
-            .iter()
-            .filter_map(move |&entity| {
-                self.get_component::<T>(entity)
-                    .map(|component| (entity, component))
-            })
+    pub fn query_one(&self, component_type: ComponentType) -> impl Iterator<Item=(Entity, &Component)> {
+        self.component_storage.query_one(component_type)
     }
 
-    pub fn query2<T: 'static, U: 'static>(&self) -> impl Iterator<Item=(Entity, (&T, &U))> + '_ {
-        self.entities
-            .iter()
-            .filter_map(move |&entity| {
-                let component1 = self.get_component::<T>(entity)?;
-                let component2 = self.get_component::<U>(entity)?;
-                Some((entity, (component1, component2)))
-            })
+    pub fn query_one_mut(&mut self, component_type: ComponentType) -> impl Iterator<Item=(Entity, &mut Component)> {
+        self.component_storage.query_one_mut(component_type)
     }
 
-    pub fn query_mut<T: 'static>(&mut self) -> impl Iterator<Item=(Entity, &mut T)> + '_ {
-        let mut components = &mut self.component_storage.components;
-
-        // Use `iter_mut` to get mutable references to the component vectors
-        components.iter_mut().filter_map(|(&entity, components_vec)| {
-            // Find a mutable reference to the component of type T
-            components_vec
-                .iter_mut()
-                .find_map(|component_box| component_box.downcast_mut::<T>())
-                .map(|component| (entity, component))
-        })
+    pub fn query(&self, component_types: Vec<ComponentType>) -> impl Iterator<Item=(Entity, Vec<&Component>)> {
+        self.component_storage.query(component_types)
     }
 
-    pub fn query_mut2<A: 'static, B: 'static>(
-        &mut self,
-    ) -> impl Iterator<Item=(Entity, (&mut A, &mut B))> + '_ {
-        let components = &mut self.component_storage.components;
-
-        components.iter_mut().filter_map(|(&entity, components_vec)| {
-            // If A and B are the same type, we cannot have two mutable references to the same component
-            if TypeId::of::<A>() == TypeId::of::<B>() {
-                return None;
-            }
-
-            // Initialize mutable references to None
-            let mut index_a: Option<usize> = None;
-            let mut index_b: Option<usize> = None;
-
-            // Collect indices of components in one iteration
-            for (index, component_box) in components_vec.iter_mut().enumerate() {
-                let type_id = component_box.type_id();
-
-                if index_a.is_none() && type_id == TypeId::of::<A>() {
-                    index_a = Some(index);
-                }
-
-                if index_b.is_none() && type_id == TypeId::of::<B>() {
-                    index_b = Some(index);
-                }
-
-                if index_a.is_some() && index_b.is_some() {
-                    break;
-                }
-            }
-
-            // If both components are found
-            if let (Some(index_a), Some(index_b)) = (index_a, index_b) {
-                // Ensure indices are different to avoid aliasing mutable references
-                if index_a != index_b {
-                    // Use safe function to get mutable references to different indices
-                    if let Some((comp_a_box, comp_b_box)) = Self::get_two_mut(components_vec, index_a, index_b) {
-                        let component_a = comp_a_box.downcast_mut::<A>().unwrap();
-                        let component_b = comp_b_box.downcast_mut::<B>().unwrap();
-                        return Some((entity, (component_a, component_b)));
-                    }
-                }
-            }
-
-            None
-        })
-    }
-
-    fn get_two_mut<T>(
-        slice: &mut [T],
-        idx1: usize,
-        idx2: usize,
-    ) -> Option<(&mut T, &mut T)> {
-        if idx1 == idx2 {
-            None
-        } else if idx1 < idx2 {
-            let (left, right) = slice.split_at_mut(idx2);
-            Some((&mut left[idx1], &mut right[0]))
-        } else {
-            let (left, right) = slice.split_at_mut(idx1);
-            Some((&mut right[0], &mut left[idx2]))
-        }
-    }
-
-    pub fn query_one_entity<T: 'static>(&self) -> Option<Entity> {
-        self.entities
-            .iter()
-            .find(|entity| self.has_component::<T>(**entity))
-            .copied()
-    }
-
-    pub fn query_one_mut<T: 'static>(&mut self) -> Option<Entity> {
-        self.entities
-            .iter()
-            .find(|entity| self.has_component::<T>(**entity))
-            .copied()
+    pub fn query_mut(&mut self, component_types: Vec<ComponentType>) -> impl Iterator<Item=(Entity, Vec<&mut Component>)> {
+        self.component_storage.query_mut(component_types)
     }
 }
 

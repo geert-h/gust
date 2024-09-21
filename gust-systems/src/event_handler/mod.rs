@@ -1,12 +1,14 @@
 use std::time::Instant;
 
+use glium::backend::glutin::SimpleWindowBuilder;
 use glium::Display;
 use glium::glutin::surface::WindowSurface;
 use glium::uniforms::UniformBuffer;
 use winit::dpi::PhysicalPosition;
 use winit::event::Event::WindowEvent;
 use winit::event::KeyEvent;
-use winit::window::{CursorGrabMode, Window};
+use winit::event_loop::EventLoop;
+use winit::window::Window;
 
 use gust_core::primitives::lights_block::LightsBlock;
 
@@ -14,14 +16,14 @@ use crate::game::Game;
 use crate::render_system::RenderSystem;
 
 pub struct EventHandler {
-    event_loop: winit::event_loop::EventLoop<()>,
+    event_loop: EventLoop<()>,
     pub window: Window,
 }
 
 impl EventHandler {
     pub fn new() -> (Self, Display<WindowSurface>) {
-        let event_loop = winit::event_loop::EventLoopBuilder::new().build().expect("Event loop building");
-        let (window, display) = glium::backend::glutin::SimpleWindowBuilder::new()
+        let event_loop = EventLoop::builder().build().expect("Failed to create event loop");
+        let (window, display) = SimpleWindowBuilder::new()
             .with_title("Gust")
             .build(&event_loop);
 
@@ -95,10 +97,6 @@ impl EventHandler {
     }
 
     fn initialize_window(&self) {
-        self.window.set_cursor_grab(CursorGrabMode::Locked)
-            .or_else(|_e| self.window.set_cursor_grab(CursorGrabMode::Confined))
-            .unwrap();
-
         self.window.set_cursor_visible(false);
     }
 
