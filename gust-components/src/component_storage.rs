@@ -50,8 +50,38 @@ impl ComponentStorage {
             })
     }
 
-    pub fn get_components(&self, entity: Entity) -> Option<&Vec<Component>> {
-        self.entity_components.get(&entity)
+    pub fn get_components(&self, entity: Entity, component_types: Vec<ComponentType>) -> Option<Vec<&Component>> {
+        self.entity_components
+            .get(&entity)
+            .map(|components| {
+                let matching_components: Vec<&Component> = components.iter()
+                    .filter(|component| component_types.contains(&component.get_type()))
+                    .collect();
+                if matching_components.len() == component_types.len() {
+                    Some(matching_components)
+                } else {
+                    None
+                }
+            })
+            .flatten()
+        // .map(|components| components.to_vec())
+    }
+
+    pub fn get_components_mut(&mut self, entity: Entity, component_types: Vec<ComponentType>) -> Option<Vec<&mut Component>> {
+        self.entity_components
+            .get_mut(&entity)
+            .map(|components| {
+                let matching_components: Vec<&mut Component> = components.iter_mut()
+                    .filter(|component| component_types.contains(&component.get_type()))
+                    .collect();
+                if matching_components.len() == component_types.len() {
+                    Some(matching_components)
+                } else {
+                    None
+                }
+            })
+            .flatten()
+        // .map(|components| components.to_vec())
     }
 
     pub fn has_components(&self, entity: Entity) -> bool {

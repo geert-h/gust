@@ -73,7 +73,7 @@ impl Game {
         let identity_transform = TransformComponentImpl::default().with_position([-5.0, 0.0, 1.0].into());
 
         let velocity = VelocityComponentImpl {
-            velocity: [1.0, 0.0, 0.0].into(),
+            velocity: [0.0, 0.0, 0.0].into(),
         };
 
         let camera = CameraComponentImpl {

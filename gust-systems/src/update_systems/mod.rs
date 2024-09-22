@@ -20,6 +20,6 @@ impl UpdateSystem {
 
         // Update the objects
         // object_rotation_system::ObjectRotationSystem::update(world, delta_time);
-        // velocity_update_system::VelocityUpdateSystem::update(world, delta_time);
+        velocity_update_system::VelocityUpdateSystem::update(world, delta_time);
     }
 }

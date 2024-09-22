@@ -9,6 +9,7 @@ use crate::ComponentType::{CameraComponentType, MeshComponentType, PlayerCompone
 pub mod component_storage;
 pub mod components;
 
+#[derive(Debug, Clone)]
 pub enum Component {
     TransformComponent(TransformComponentImpl),
     VelocityComponent(VelocityComponentImpl),

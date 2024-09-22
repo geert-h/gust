@@ -1,6 +1,7 @@
 use gust_math::matrices::mat4::Mat4;
 use gust_math::vectors::vect3::Vect3;
 
+#[derive(Debug, Clone)]
 pub struct TransformComponentImpl {
     pub position: Vect3,
     pub forward: Vect3,

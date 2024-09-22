@@ -1,4 +1,4 @@
-use std::ops::{Index, IndexMut};
+use std::ops::{AddAssign, Index, IndexMut, MulAssign};
 
 use crate::vectors::vect4::Vect4;
 
@@ -79,6 +79,10 @@ impl Vect3 {
         let norm_other = other.norm();
         let cos_theta = dot / (norm_self * norm_other);
         cos_theta.acos()
+    }
+
+    pub fn magnitude(&self) -> f32 {
+        (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
     }
 }
 
@@ -221,5 +225,31 @@ impl From<Vect4> for Vect3 {
             y: vect4.y,
             z: vect4.z,
         }
+    }
+}
+
+impl AddAssign for Vect3 {
+    fn add_assign(&mut self, other: Vect3) {
+        self.x += other.x;
+        self.y += other.y;
+        self.z += other.z;
+    }
+}
+
+impl Default for Vect3 {
+    fn default() -> Vect3 {
+        Vect3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        }
+    }
+}
+
+impl MulAssign<f32> for Vect3 {
+    fn mul_assign(&mut self, rhs: f32) {
+        self.x *= rhs;
+        self.y *= rhs;
+        self.z *= rhs;
     }
 }

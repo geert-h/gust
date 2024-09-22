@@ -1,5 +1,6 @@
 use gust_math::vectors::vect3::Vect3;
 
+#[derive(Debug, Clone)]
 pub struct CameraComponentImpl {
     pub fov: f32,
     pub z_near: f32,

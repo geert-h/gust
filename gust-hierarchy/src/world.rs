@@ -90,6 +90,14 @@ impl World {
         self.component_storage.get_component_mut(entity, component_type)
     }
 
+    pub fn get_components(&self, entity: Entity, component_types: Vec<ComponentType>) -> Option<Vec<&Component>> {
+        self.component_storage.get_components(entity, component_types)
+    }
+
+    pub fn get_components_mut(&mut self, entity: Entity, component_types: Vec<ComponentType>) -> Option<Vec<&mut Component>> {
+        self.component_storage.get_components_mut(entity, component_types)
+    }
+
     // Check if an entity has a component
     pub fn has_component(&self, entity: Entity, component_type: ComponentType) -> bool {
         self.component_storage.has_component(entity, component_type)
