@@ -1,4 +1,4 @@
-use std::ops::{AddAssign, Index, IndexMut, MulAssign};
+use std::ops::{AddAssign, Index, IndexMut, MulAssign, SubAssign};
 
 use crate::vectors::vect4::Vect4;
 
@@ -233,6 +233,14 @@ impl AddAssign for Vect3 {
         self.x += other.x;
         self.y += other.y;
         self.z += other.z;
+    }
+}
+
+impl SubAssign for Vect3 {
+    fn sub_assign(&mut self, rhs: Self) {
+        self.x -= rhs.x;
+        self.y -= rhs.y;
+        self.z -= rhs.z;
     }
 }
 

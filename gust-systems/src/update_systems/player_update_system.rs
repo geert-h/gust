@@ -18,16 +18,16 @@ impl PlayerUpdateSystem {
     const MAX_VERTICAL_ANGLE: f32 = 180.0f32 * PI / 180.0f32;
     const MIN_VERTICAL_ANGLE: f32 = 0.0f32 * PI / 180.0f32;
 
-    pub fn update(player_entity: Entity, dt: &f32, world: &mut World, game_input: &InputHandler) {
+    pub fn update(player_entity: Entity, dt: f32, world: &mut World, game_input: &InputHandler) {
         let [TransformComponent(ref mut transform), VelocityComponent(ref mut player_velocity)] = world
             .get_components_mut(player_entity, vec![TransformComponentType, VelocityComponentType])
             .unwrap()[..] else { return; };
 
         PlayerUpdateSystem::update_direction(dt, transform, game_input);
-        PlayerUpdateSystem::update_velocity(transform, player_velocity, game_input);
+        PlayerUpdateSystem::update_velocity(dt, transform, player_velocity, game_input);
     }
 
-    fn update_direction(dt: &f32, player_transform: &mut TransformComponentImpl, game_input: &InputHandler) {
+    fn update_direction(dt: f32, player_transform: &mut TransformComponentImpl, game_input: &InputHandler) {
         let delta_x = game_input.mouse_input.mouse_delta.0;
         let delta_y = game_input.mouse_input.mouse_delta.1;
 
@@ -56,10 +56,12 @@ impl PlayerUpdateSystem {
 
         new_direction.normalize();
 
-        player_transform.forward = (dt.clone() * new_direction).normalize();
+        player_transform.forward = (dt * new_direction).normalize();
     }
 
-    fn update_velocity(player_transform: &TransformComponentImpl, player_velocity: &mut VelocityComponentImpl, game_input: &InputHandler) {
+    fn update_velocity(dt: f32, player_transform: &TransformComponentImpl, player_velocity: &mut VelocityComponentImpl, game_input: &InputHandler) {
+        let speed_step = 10.0;
+
         let forward = player_transform.forward.clone();
         let up = player_transform.up.clone();
 
@@ -69,19 +71,19 @@ impl PlayerUpdateSystem {
         let mut cumulative_vector = Vect3::new(0.0, 0.0, 0.0);
 
         if game_input.keyboard_input.is_character_pressed('w') {
-            cumulative_vector = cumulative_vector + horizontal;
+            cumulative_vector += horizontal * speed_step * dt;
         }
 
         if game_input.keyboard_input.is_character_pressed('s') {
-            cumulative_vector = cumulative_vector - horizontal;
+            cumulative_vector = cumulative_vector - horizontal * speed_step * dt;
         }
 
         if game_input.keyboard_input.is_character_pressed('a') {
-            cumulative_vector = cumulative_vector + right;
+            cumulative_vector = cumulative_vector + right * speed_step * dt;
         }
 
         if game_input.keyboard_input.is_character_pressed('d') {
-            cumulative_vector = cumulative_vector - right;
+            cumulative_vector = cumulative_vector - right * speed_step * dt;
         }
 
         if game_input.keyboard_input.is_key_pressed(Key::Named(NamedKey::Space)) {
@@ -92,16 +94,14 @@ impl PlayerUpdateSystem {
             cumulative_vector = cumulative_vector - up;
         }
 
-        let max_speed = 10.0;
-        if cumulative_vector.magnitude() > max_speed {
-            cumulative_vector = cumulative_vector.normalize() * max_speed;
-        }
-
         // //Apply Gravity
         // let gravity = GRAVITY;
         // cumulative_vector = cumulative_vector + gravity;
 
-        // cumulative_vector.normalize();
-        player_velocity.velocity += cumulative_vector; // * temp_speed;
+
+        let max_speed = 10.0;
+        if player_velocity.velocity.magnitude() < max_speed {
+            player_velocity.velocity += cumulative_vector;
+        }
     }
 }

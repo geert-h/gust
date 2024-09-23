@@ -91,7 +91,7 @@ impl Game {
         // Make monkey object
         let monkey = world.spawn();
         let monkey_transform = TransformComponentImpl::default()
-            .with_position([0.0, 0.0, 8.0].into());
+            .with_position([0.0, 0.0, 1.0].into());
 
         world.add_component(monkey, TransformComponent(monkey_transform));
         world.add_component(monkey, MeshComponent(gust_components::components::mesh_component::MeshComponentImpl(monkey_mesh_id)));
@@ -107,7 +107,7 @@ impl Game {
         world.add_component(floor, TextureComponent(gust_components::components::texture_component::TextureComponentImpl(floor_texture_id)));
 
         let transform_entity = world.spawn();
-        let transform = TransformComponentImpl::default().with_scale([2.0, 1.0, 5.0].into());
+        let transform = TransformComponentImpl::default().with_scale([1.0, 1.0, 1.0].into());
 
         world.add_component(transform_entity, TransformComponent(transform));
 

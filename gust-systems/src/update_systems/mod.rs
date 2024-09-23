@@ -16,7 +16,7 @@ impl UpdateSystem {
         let player = world.query_one(PlayerComponentType).collect::<Vec<(Entity, &Component)>>().iter().map(|(entity, _component)| *entity).collect::<Vec<Entity>>()[0];
 
         // Update the player's transform
-        player_update_system::PlayerUpdateSystem::update(player, &delta_time, world, &game_input);
+        player_update_system::PlayerUpdateSystem::update(player, delta_time, world, &game_input);
 
         // Update the objects
         // object_rotation_system::ObjectRotationSystem::update(world, delta_time);
