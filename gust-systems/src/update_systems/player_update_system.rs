@@ -89,7 +89,7 @@ impl PlayerUpdateSystem {
         if game_input.keyboard_input.is_character_pressed('a') {
             cumulative_vector += right;
         }
-        if game_input.keyboard_input.is_character_pressed('a') {
+        if game_input.keyboard_input.is_character_pressed('d') {
             cumulative_vector -= right;
         }
 
@@ -111,48 +111,24 @@ impl PlayerUpdateSystem {
     }
 
     fn update_velocity(dt: f32, player_transform: &TransformComponentImpl, player_velocity: &mut VelocityComponentImpl, game_input: &InputHandler) {
-        let speed_step = 10.0;
+        let speed_step = 20.0;
 
         let forward = player_transform.forward.clone();
         let up = player_transform.up.clone();
 
-        // let horizontal = (forward - up * forward.dot(&up)).normalize();
-        // let right = horizontal.cross(&up).normalize();
+        let horizontal = Self::get_horizontal_force(forward, up, game_input) * speed_step * dt;
+        let vertical = Self::get_vertical_force(up, game_input) * speed_step * dt;
 
-        let mut cumulative_vector = Vect3::new(0.0, 0.0, 0.0);
-        //
-        // if game_input.keyboard_input.is_character_pressed('w') {
-        //     cumulative_vector += horizontal * speed_step * dt;
-        // }
-        //
-        // if game_input.keyboard_input.is_character_pressed('s') {
-        //     cumulative_vector -= horizontal * speed_step * dt;
-        // }
-        //
-        // if game_input.keyboard_input.is_character_pressed('a') {
-        //     cumulative_vector += right * speed_step * dt;
-        // }
-        //
-        // if game_input.keyboard_input.is_character_pressed('d') {
-        //     cumulative_vector -= right * speed_step * dt;
-        // }
-
-        let horizontal = Self::get_horizontal_force(forward, up, game_input);
-        let vertical
-
-        if game_input.keyboard_input.is_key_pressed(Key::Named(NamedKey::Space)) {
-            cumulative_vector += up * speed_step * dt;
-        }
-
-        if game_input.keyboard_input.is_key_pressed(Key::Named(NamedKey::Shift)) {
-            cumulative_vector -= up * speed_step * dt;
+        if horizontal == Vect3::zeros() {
+            player_velocity.velocity = player_velocity.velocity / 2.0;
+            return;
         }
 
         // //Apply Gravity
         // let gravity = GRAVITY;
         // cumulative_vector = cumulative_vector + gravity;
 
-        player_velocity.velocity += cumulative_vector;
+        player_velocity.velocity += horizontal + vertical;
     }
 
     fn control_speed(player_velocity: &mut VelocityComponentImpl) {

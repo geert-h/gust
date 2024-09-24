@@ -156,6 +156,18 @@ impl std::ops::Mul<f32> for Vect3 {
     }
 }
 
+impl std::ops::Div<f32> for Vect3 {
+    type Output = Vect3;
+
+    fn div(self, rhs: f32) -> Self::Output {
+        Vect3 {
+            x: self.x / rhs,
+            y: self.y / rhs,
+            z: self.z / rhs,
+        }
+    }
+}
+
 impl std::ops::Mul<Vect3> for f32 {
     type Output = Vect3;
 
