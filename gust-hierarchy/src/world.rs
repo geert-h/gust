@@ -122,6 +122,10 @@ impl World {
     pub fn query_mut(&mut self, component_types: Vec<ComponentType>) -> impl Iterator<Item=(Entity, Vec<&mut Component>)> {
         self.component_storage.query_mut(component_types)
     }
+
+    pub fn with_components(&self, component_types: Vec<ComponentType>) -> impl Iterator<Item=&Entity> {
+        self.component_storage.with_components(component_types)
+    }
 }
 
 #[cfg(test)]

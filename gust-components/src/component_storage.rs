@@ -81,7 +81,6 @@ impl ComponentStorage {
                 }
             })
             .flatten()
-        // .map(|components| components.to_vec())
     }
 
     pub fn has_components(&self, entity: Entity) -> bool {
@@ -139,9 +138,20 @@ impl ComponentStorage {
                     .collect();
                 if matching_components.len() == component_types.len() {
                     Some((*entity, matching_components))
-                } else {
-                    None
-                }
+                } else { None }
+            })
+    }
+
+    pub fn with_components(&self, component_types: Vec<ComponentType>) -> impl Iterator<Item=&Entity> {
+        self.entity_components
+            .iter()
+            .filter_map(move |(entity, components)| {
+                let matches: Vec<&Component> = components.iter()
+                    .filter(|component| component_types.contains(&component.get_type()))
+                    .collect();
+                if matches.len() == component_types.len() {
+                    Some(entity)
+                } else { None }
             })
     }
 }

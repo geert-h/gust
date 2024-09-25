@@ -2,6 +2,7 @@ use std::ops::{Index, IndexMut};
 
 use crate::vectors::vect3::Vect3;
 
+#[derive(Copy, Debug)]
 pub struct Mat3 {
     pub data: [[f32; 3]; 3],
 }
