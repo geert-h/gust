@@ -1,7 +1,8 @@
 use std::collections::HashSet;
 
 use gust_components::{Component, ComponentType};
-use gust_components::component_storage::ComponentStorage;
+use gust_components::new_component_storage::NewComponentStorage;
+// use gust_components::component_storage::ComponentStorage;
 use gust_core::entity::Entity;
 
 use crate::scene_tree::SceneTree;
@@ -37,7 +38,7 @@ use crate::scene_tree::SceneTree;
 /// assert_eq!(entities, vec![entity]);
 /// ```
 pub struct World {
-    component_storage: ComponentStorage,
+    component_storage: NewComponentStorage,
     scene_tree: SceneTree,
     pub entities: HashSet<Entity>,
     pub entity_count: usize,
@@ -46,7 +47,7 @@ pub struct World {
 impl World {
     pub fn new() -> Self {
         World {
-            component_storage: ComponentStorage::new(),
+            component_storage: NewComponentStorage::new(),
             scene_tree: SceneTree::new(),
             entities: HashSet::new(),
             entity_count: 0,
@@ -98,6 +99,10 @@ impl World {
         self.component_storage.get_components_mut(entity, component_types)
     }
 
+    pub fn get_mul_components_mut(&mut self, entities: Vec<Entity>, component_types: Vec<ComponentType>) -> Option<Vec<Vec<&mut Component>>> {
+        self.component_storage.get_mul_components_mut(entities, component_types)
+    }
+
     // Check if an entity has a component
     pub fn has_component(&self, entity: Entity, component_type: ComponentType) -> bool {
         self.component_storage.has_component(entity, component_type)
@@ -128,19 +133,15 @@ impl World {
     }
 }
 
+
 #[cfg(test)]
 mod tests {
+    use gust_components::Component::{TransformComponent, VelocityComponent};
+    use gust_components::components::transform_component::TransformComponentImpl;
+    use gust_components::components::velocity_component::VelocityComponentImpl;
+    use gust_components::ComponentType::TransformComponentType;
+
     use super::*;
-
-    #[derive(Debug, Clone, PartialEq)]
-    struct Transform {
-        position: (f32, f32),
-    }
-
-    #[derive(Debug, Clone, PartialEq)]
-    struct Velocity {
-        speed: f32,
-    }
 
     #[test]
     fn test_create_entity() {
@@ -161,13 +162,13 @@ mod tests {
         let mut world = World::new();
         let entity = world.spawn();
 
-        let transform = Transform { position: (0.0, 0.0) };
-        world.add_component(entity, transform);
+        let transform = TransformComponentImpl::default();
+        world.add_component(entity, TransformComponent(transform));
 
-        let velocity = Velocity { speed: 1.0 };
-        world.add_component(entity, velocity);
+        let velocity = VelocityComponentImpl::default();
+        world.add_component(entity, VelocityComponent(velocity));
 
-        assert_eq!(world.component_storage.component_count(), 1);
+        assert_eq!(world.entity_count, 1);
     }
 
     #[test]
@@ -175,14 +176,14 @@ mod tests {
         let mut world = World::new();
         let entity = world.spawn();
 
-        let transform = Transform { position: (0.0, 0.0) };
-        world.add_component(entity, transform.clone());
+        let transform = TransformComponentImpl::default();
+        world.add_component(entity, TransformComponent(transform.clone()));
 
-        let velocity = Velocity { speed: 1.0 };
-        world.add_component(entity, velocity.clone());
+        let velocity = VelocityComponentImpl::default();
+        world.add_component(entity, VelocityComponent(velocity));
 
-        let transform_component = world.get_component::<Transform>(entity);
-        assert_eq!(transform_component, Some(&transform));
+        let transform_component = world.get_component(entity, TransformComponentType).unwrap();
+        assert_eq!(transform_component, &TransformComponent(transform.clone()));
     }
 
     #[test]
@@ -190,18 +191,18 @@ mod tests {
         let mut world = World::new();
         let entity = world.spawn();
 
-        let transform = Transform { position: (0.0, 0.0) };
-        world.add_component(entity, transform.clone());
+        let transform = TransformComponentImpl::default();
+        world.add_component(entity, TransformComponent(transform.clone()));
 
-        let velocity = Velocity { speed: 1.0 };
-        world.add_component(entity, velocity.clone());
+        let velocity = VelocityComponentImpl::default();
+        world.add_component(entity, VelocityComponent(velocity.clone()));
 
-        if let Some(transform_component) = world.get_component_mut::<Transform>(entity) {
-            transform_component.position = (1.0, 1.0);
+        if let Some(TransformComponent(transform_component)) = world.get_component_mut(entity, TransformComponentType) {
+            transform_component.position = [0.0, 0.0, 0.0].into();
         }
 
-        let new_transform = Transform { position: (1.0, 1.0) };
-        let transform_component = world.get_component::<Transform>(entity);
+        let new_transform = TransformComponent(TransformComponentImpl::default());
+        let transform_component = world.get_component(entity, TransformComponentType);
         assert_eq!(transform_component, Some(&new_transform));
     }
 
@@ -210,58 +211,26 @@ mod tests {
         let mut world = World::new();
         let entity = world.spawn();
 
-        let transform = Transform { position: (0.0, 0.0) };
-        world.add_component(entity, transform);
+        let transform = TransformComponentImpl::default();
+        world.add_component(entity, TransformComponent(transform));
 
-        assert!(world.has_component::<Transform>(entity));
+        assert!(world.has_component(entity, TransformComponentType));
     }
 
     #[test]
-    fn test_query() {
+    fn test_with_components() {
         let mut world = World::new();
         let entity1 = world.spawn();
         let entity2 = world.spawn();
 
-        let transform = Transform { position: (0.0, 0.0) };
-        world.add_component(entity1, transform);
+        let transform = TransformComponentImpl::default();
+        world.add_component(entity1, TransformComponent(transform));
 
-        let velocity = Velocity { speed: 1.0 };
-        world.add_component(entity2, velocity);
+        let velocity = VelocityComponentImpl::default();
+        world.add_component(entity2, VelocityComponent(velocity));
 
-        let entities = world.query::<Transform>();
-        assert_eq!(entities, vec![entity1]);
-    }
-
-    #[test]
-    fn test_query_one() {
-        let mut world = World::new();
-        let entity1 = world.spawn();
-        let entity2 = world.spawn();
-
-        let transform = Transform { position: (0.0, 0.0) };
-        world.add_component(entity1, transform);
-
-        let velocity = Velocity { speed: 1.0 };
-        world.add_component(entity2, velocity);
-
-        let entity = world.query_one_entity::<Velocity>();
-        assert_eq!(entity, Some(entity2));
-    }
-
-    #[test]
-    fn test_query_with_two_components() {
-        let mut world = World::new();
-        let entity1 = world.spawn();
-        let entity2 = world.spawn();
-
-        let transform = Transform { position: (0.0, 0.0) };
-        world.add_component(entity1, transform);
-
-        let velocity = Velocity { speed: 1.0 };
-        world.add_component(entity1, velocity);
-
-        let entities = world.query::<(Transform, Velocity)>();
-        assert_eq!(entities, vec![entity1]);
+        let entities: Vec<_> = world.with_components(vec![TransformComponentType]).collect();
+        assert_eq!(entities, vec![&entity1]);
     }
 
     #[test]

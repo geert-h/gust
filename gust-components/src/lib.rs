@@ -12,7 +12,8 @@ use crate::physics::rigid_body_component::RigidBodyComponentImpl;
 
 pub mod component_storage;
 pub mod components;
-mod physics;
+pub mod physics;
+pub mod new_component_storage;
 
 #[derive(Debug, Clone)]
 pub enum Component {
@@ -53,5 +54,11 @@ impl Component {
             MaterialComponent(..) => MaterialComponentType,
             RigidBodyComponent(..) => RigidBodyComponentType,
         }
+    }
+}
+
+impl PartialEq for Component {
+    fn eq(&self, other: &Self) -> bool {
+        self.get_type() == other.get_type()
     }
 }

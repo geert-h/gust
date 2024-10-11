@@ -5,17 +5,22 @@ use std::time::Instant;
 use glium::{Display, Texture2d};
 use glium::glutin::surface::WindowSurface;
 
-use gust_components::Component::{CameraComponent, MeshComponent, PlayerComponent, TextureComponent, TransformComponent, VelocityComponent};
+use gust_components::Component::{CameraComponent, ColliderComponent, MaterialComponent, MeshComponent, PlayerComponent, RigidBodyComponent, TextureComponent, TransformComponent, VelocityComponent};
 use gust_components::components::camera_component::CameraComponentImpl;
 use gust_components::components::player_component::PlayerComponentImpl;
 use gust_components::components::transform_component::TransformComponentImpl;
 use gust_components::components::velocity_component::VelocityComponentImpl;
+use gust_components::physics::collider_component::ColliderComponentImpl;
+use gust_components::physics::collider_component::ColliderType::AABB;
+use gust_components::physics::material_component::MaterialComponentImpl;
+use gust_components::physics::rigid_body_component::RigidBodyComponentImpl;
 use gust_core::handlers::input_handler::InputHandler;
 use gust_core::objects::intermediaries::wavefront_object::WavefrontObject;
 use gust_core::primitives::mesh::Mesh;
 use gust_core::storages::mesh_storage::MeshStorage;
 use gust_core::storages::texture_storage::TextureStorage;
 use gust_hierarchy::world::World;
+use gust_math::vectors::vect3::Vect3;
 
 use crate::event_handler::EventHandler;
 use crate::render_system::RenderSystem;
@@ -45,9 +50,15 @@ impl Game {
     }
 
     fn construct_scene(&mut self, display: &Display<WindowSurface>) -> World {
+        let monkey_wavefront = WavefrontObject::parse(Path::new("resources/assets/objects/monkey.obj"));
+        let floor_wavefront = WavefrontObject::parse(Path::new("resources/assets/objects/floor.obj"));
+
         // Load the meshes
-        let monkey_mesh = Mesh::from_wavefront(WavefrontObject::parse(Path::new("resources/assets/objects/monkey.obj")));
-        let floor_mesh = Mesh::from_wavefront(WavefrontObject::parse(Path::new("resources/assets/objects/floor.obj")));
+        let monkey_mesh = Mesh::from_wavefront(monkey_wavefront.clone());
+        let floor_mesh = Mesh::from_wavefront(floor_wavefront.clone());
+
+        let monkey_aabb = ColliderComponentImpl::from_wavefront_aabb(&monkey_wavefront);
+        let floor_aabb = ColliderComponentImpl::from_wavefront_aabb(&floor_wavefront);
 
         // Add them to the mesh storage
         let monkey_mesh_id = self.mesh_storage.add_mesh(monkey_mesh);
@@ -83,28 +94,88 @@ impl Game {
             z_far: 1024.0,
         };
 
+        let player_collider = ColliderComponentImpl {
+            collider_type: AABB {
+                min: Vect3::new(-0.5, -1.0, -0.5),
+                max: Vect3::new(0.5, 1.0, 0.5),
+            },
+        };
+
+        // Create RigidBodyComponent for the player
+        let player_rigid_body = RigidBodyComponentImpl {
+            mass: 1.0, // Adjust mass as needed
+            forces: Vect3::zeros(),
+            acceleration: Vect3::zeros(),
+            is_static: false,
+        };
+
+        // Create MaterialComponent for the player
+        let player_material = MaterialComponentImpl {
+            friction: 0.6,     // Adjust as needed
+            restitution: 0.3,  // Adjust as needed
+        };
+
         world.add_component(player, TransformComponent(identity_transform));
         world.add_component(player, VelocityComponent(velocity.clone()));
         world.add_component(player, PlayerComponent(PlayerComponentImpl));
         world.add_component(player, CameraComponent(camera));
+        world.add_component(player, ColliderComponent(player_collider));
+        world.add_component(player, RigidBodyComponent(player_rigid_body));
+        world.add_component(player, MaterialComponent(player_material));
 
         // Make monkey object
         let monkey = world.spawn();
         let monkey_transform = TransformComponentImpl::default()
             .with_position([0.0, 0.0, 1.0].into());
 
+        // Create RigidBodyComponent for the monkey
+        let monkey_rigid_body = RigidBodyComponentImpl {
+            mass: 1.0,
+            forces: Vect3::zeros(),
+            acceleration: Vect3::zeros(),
+            is_static: false,
+        };
+
+        // Create MaterialComponent for the monkey
+        let monkey_material = MaterialComponentImpl {
+            friction: 0.5,
+            restitution: 0.8,
+        };
+
+        // Add components to the monkey entity
         world.add_component(monkey, TransformComponent(monkey_transform));
         world.add_component(monkey, MeshComponent(gust_components::components::mesh_component::MeshComponentImpl(monkey_mesh_id)));
         world.add_component(monkey, TextureComponent(gust_components::components::texture_component::TextureComponentImpl(monkey_texture_id)));
         world.add_component(monkey, VelocityComponent(velocity));
+        world.add_component(monkey, ColliderComponent(monkey_aabb));
+        world.add_component(monkey, RigidBodyComponent(monkey_rigid_body));
+        world.add_component(monkey, MaterialComponent(monkey_material));
 
         // Make floor object
         let floor = world.spawn();
         let floor_transform = TransformComponentImpl::default();
 
+        // Create RigidBodyComponent for the floor
+        let floor_rigid_body = RigidBodyComponentImpl {
+            mass: 0.0, // Mass is irrelevant for static objects
+            forces: Vect3::zeros(),
+            acceleration: Vect3::zeros(),
+            is_static: true, // Indicates that the object is static
+        };
+
+        // Create MaterialComponent for the floor
+        let floor_material = MaterialComponentImpl {
+            friction: 0.9,     // High friction
+            restitution: 0.5,  // Low restitution (less bouncy)
+        };
+
+        // Add components to the floor entity
         world.add_component(floor, TransformComponent(floor_transform));
         world.add_component(floor, MeshComponent(gust_components::components::mesh_component::MeshComponentImpl(floor_mesh_id)));
         world.add_component(floor, TextureComponent(gust_components::components::texture_component::TextureComponentImpl(floor_texture_id)));
+        world.add_component(floor, ColliderComponent(floor_aabb));
+        world.add_component(floor, RigidBodyComponent(floor_rigid_body));
+        world.add_component(floor, MaterialComponent(floor_material));
 
         let transform_entity = world.spawn();
         let transform = TransformComponentImpl::default().with_scale([1.0, 1.0, 1.0].into());

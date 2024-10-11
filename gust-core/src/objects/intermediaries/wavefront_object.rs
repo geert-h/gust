@@ -1,5 +1,4 @@
-
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct WavefrontObject {
     pub vertices: Vec<[f32; 3]>,
     pub tex_coords: Vec<[f32; 2]>,

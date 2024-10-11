@@ -1,5 +1,5 @@
 #[derive(Copy, Clone, Debug)]
 pub struct MaterialComponentImpl {
-    friction: f32,
-    restitution: f32,
+    pub friction: f32,
+    pub restitution: f32,
 }
