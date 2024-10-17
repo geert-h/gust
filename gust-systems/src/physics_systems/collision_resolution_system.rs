@@ -1,7 +1,5 @@
-use gust_components::Component::{ColliderComponent, MaterialComponent, RigidBodyComponent, TransformComponent, VelocityComponent};
 use gust_components::components::transform_component::TransformComponentImpl;
 use gust_components::components::velocity_component::VelocityComponentImpl;
-use gust_components::ComponentType::{ColliderComponentType, MaterialComponentType, RigidBodyComponentType, TransformComponentType, VelocityComponentType};
 use gust_components::physics::collider_component::{ColliderComponentImpl, ColliderType};
 use gust_components::physics::material_component::MaterialComponentImpl;
 use gust_components::physics::rigid_body_component::RigidBodyComponentImpl;
@@ -14,65 +12,65 @@ pub struct CollisionResolutionSystem;
 
 impl CollisionResolutionSystem {
     pub fn run(delta_time: f32, world: &mut World, collision_pairs: Vec<CollisionPair>) {
-        let component_types = vec![
-            TransformComponentType,
-            RigidBodyComponentType,
-            VelocityComponentType,
-            MaterialComponentType,
-            ColliderComponentType,
-        ];
-
-        for collision in collision_pairs {
-            let (entity_a, entity_b) = collision.get_entities();
-
-            // Get components for entity A
-            let components_a = world.get_components_mut(entity_a, component_types.clone());
-            if components_a.is_none() {
-                continue;
-            }
-            let [TransformComponent(ref mut transform_a),
-            RigidBodyComponent(ref mut rigid_body_a),
-            VelocityComponent(ref mut velocity_a),
-            MaterialComponent(ref material_a),
-            ColliderComponent(ref collider_a)] = components_a.unwrap()[..] else { continue };
-
-            // Calculate collision normal and penetration depth first
-            let (normal, penetration) = {
-                // Temporarily borrow only `entity_b` to get collider for calculating collision info
-                let components_b = world.get_components_mut(entity_b, vec![ColliderComponentType, TransformComponentType]);
-                if components_b.is_none() {
-                    continue;
-                }
-
-                let [TransformComponent(ref transform_b),
-                ColliderComponent(ref collider_b)] = components_b.unwrap()[..] else { continue };
-
-                Self::calculate_collision_info(transform_a.clone(), collider_a.clone(), transform_b.clone(), collider_b.clone())
-            };
-
-            // Now get the components for entity B after the calculation
-            let components_b = world.get_components_mut(entity_b, component_types.clone());
-            if components_b.is_none() {
-                continue;
-            }
-            let [TransformComponent(ref mut transform_b),
-            RigidBodyComponent(ref mut rigid_body_b),
-            VelocityComponent(ref mut velocity_b),
-            MaterialComponent(ref material_b),
-            ColliderComponent(ref collider_b)] = components_b.unwrap()[..] else { continue };
-
-            // Skip if both are static
-            if rigid_body_a.clone().is_static && rigid_body_b.clone().is_static {
-                continue;
-            }
-
-            // Resolve collision
-            Self::resolve_collision(
-                rigid_body_a, velocity_a, transform_a, material_a,
-                rigid_body_b, velocity_b, transform_b, material_b,
-                normal, penetration,
-            );
-        }
+        // let component_types = vec![
+        //     TransformComponentType,
+        //     RigidBodyComponentType,
+        //     VelocityComponentType,
+        //     MaterialComponentType,
+        //     ColliderComponentType,
+        // ];
+        //
+        // for collision in collision_pairs {
+        //     let (entity_a, entity_b) = collision.get_entities();
+        //
+        //     // Get components for entity A
+        //     let components_a = world.get_components_mut(entity_a, component_types.clone());
+        //     if components_a.is_none() {
+        //         continue;
+        //     }
+        //     let [TransformComponent(ref mut transform_a),
+        //     RigidBodyComponent(ref mut rigid_body_a),
+        //     VelocityComponent(ref mut velocity_a),
+        //     MaterialComponent(ref material_a),
+        //     ColliderComponent(ref collider_a)] = components_a.unwrap()[..] else { continue };
+        //
+        //     // Calculate collision normal and penetration depth first
+        //     let (normal, penetration) = {
+        //         // Temporarily borrow only `entity_b` to get collider for calculating collision info
+        //         let components_b = world.get_components_mut(entity_b, vec![ColliderComponentType, TransformComponentType]);
+        //         if components_b.is_none() {
+        //             continue;
+        //         }
+        //
+        //         let [TransformComponent(ref transform_b),
+        //         ColliderComponent(ref collider_b)] = components_b.unwrap()[..] else { continue };
+        //
+        //         Self::calculate_collision_info(transform_a.clone(), collider_a.clone(), transform_b.clone(), collider_b.clone())
+        //     };
+        //
+        //     // Now get the components for entity B after the calculation
+        //     let components_b = world.get_components_mut(entity_b, component_types.clone());
+        //     if components_b.is_none() {
+        //         continue;
+        //     }
+        //     let [TransformComponent(ref mut transform_b),
+        //     RigidBodyComponent(ref mut rigid_body_b),
+        //     VelocityComponent(ref mut velocity_b),
+        //     MaterialComponent(ref material_b),
+        //     ColliderComponent(ref collider_b)] = components_b.unwrap()[..] else { continue };
+        //
+        //     // Skip if both are static
+        //     if rigid_body_a.clone().is_static && rigid_body_b.clone().is_static {
+        //         continue;
+        //     }
+        //
+        //     // Resolve collision
+        //     Self::resolve_collision(
+        //         rigid_body_a, velocity_a, transform_a, material_a,
+        //         rigid_body_b, velocity_b, transform_b, material_b,
+        //         normal, penetration,
+        //     );
+        // }
     }
 
 

@@ -13,7 +13,6 @@ use crate::physics::rigid_body_component::RigidBodyComponentImpl;
 pub mod component_storage;
 pub mod components;
 pub mod physics;
-pub mod new_component_storage;
 
 #[derive(Debug, Clone)]
 pub enum Component {

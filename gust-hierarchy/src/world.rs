@@ -1,8 +1,7 @@
 use std::collections::HashSet;
 
 use gust_components::{Component, ComponentType};
-use gust_components::new_component_storage::NewComponentStorage;
-// use gust_components::component_storage::ComponentStorage;
+use gust_components::component_storage::ComponentStorage;
 use gust_core::entity::Entity;
 
 use crate::scene_tree::SceneTree;
@@ -38,7 +37,7 @@ use crate::scene_tree::SceneTree;
 /// assert_eq!(entities, vec![entity]);
 /// ```
 pub struct World {
-    component_storage: NewComponentStorage,
+    component_storage: ComponentStorage,
     scene_tree: SceneTree,
     pub entities: HashSet<Entity>,
     pub entity_count: usize,
@@ -47,7 +46,7 @@ pub struct World {
 impl World {
     pub fn new() -> Self {
         World {
-            component_storage: NewComponentStorage::new(),
+            component_storage: ComponentStorage::new(),
             scene_tree: SceneTree::new(),
             entities: HashSet::new(),
             entity_count: 0,
@@ -97,10 +96,6 @@ impl World {
 
     pub fn get_components_mut(&mut self, entity: Entity, component_types: Vec<ComponentType>) -> Option<Vec<&mut Component>> {
         self.component_storage.get_components_mut(entity, component_types)
-    }
-
-    pub fn get_mul_components_mut(&mut self, entities: Vec<Entity>, component_types: Vec<ComponentType>) -> Option<Vec<Vec<&mut Component>>> {
-        self.component_storage.get_mul_components_mut(entities, component_types)
     }
 
     // Check if an entity has a component
